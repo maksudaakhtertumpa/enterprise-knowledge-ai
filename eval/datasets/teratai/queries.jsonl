@@ -1,0 +1,51 @@
+{"id": "L01", "category": "lexical", "query": "form FIN-12", "relevant": [{"doc": "travel-and-expense.txt", "section": "Submitting Expense Claims"}]}
+{"id": "L02", "category": "lexical", "query": "GlobalConnect client", "relevant": [{"doc": "it-security.txt", "section": "VPN Access"}]}
+{"id": "L03", "category": "lexical", "query": "extension 4357", "relevant": [{"doc": "it-security.txt", "section": "Lost or Stolen Devices"}]}
+{"id": "L04", "category": "lexical", "query": "KeyVault password manager", "relevant": [{"doc": "it-security.txt", "section": "Password Requirements"}]}
+{"id": "L05", "category": "lexical", "query": "Section 17A MACC Act", "relevant": [{"doc": "code-of-conduct.txt", "section": "Anti-Bribery and Corruption"}]}
+{"id": "L06", "category": "lexical", "query": "ProcureNow purchase order", "relevant": [{"doc": "procurement.txt", "section": "Purchase Orders"}]}
+{"id": "L07", "category": "lexical", "query": "TravelHub booking", "relevant": [{"doc": "travel-and-expense.txt", "section": "Booking Business Travel"}, {"doc": "travel-and-expense.txt", "section": "Overseas Travel"}]}
+{"id": "L08", "category": "lexical", "query": "PeopleGrow OKR", "relevant": [{"doc": "performance.txt", "section": "Goal Setting"}]}
+{"id": "L09", "category": "lexical", "query": "speakup.teratai.example", "relevant": [{"doc": "code-of-conduct.txt", "section": "Whistleblowing"}]}
+{"id": "L10", "category": "lexical", "query": "Car Park C assembly point", "relevant": [{"doc": "facilities.txt", "section": "Emergency Evacuation"}]}
+{"id": "L11", "category": "lexical", "query": "SSM registration for vendors", "relevant": [{"doc": "procurement.txt", "section": "Vendor Onboarding and Due Diligence"}]}
+{"id": "L12", "category": "lexical", "query": "EPF SOCSO EIS", "relevant": [{"doc": "onboarding.txt", "section": "Payroll and Statutory Registration"}]}
+{"id": "L13", "category": "lexical", "query": "LearnHub modules", "relevant": [{"doc": "onboarding.txt", "section": "Mandatory Training"}]}
+{"id": "L14", "category": "lexical", "query": "WPA2", "relevant": [{"doc": "remote-work.txt", "section": "Security When Working Remotely"}]}
+{"id": "L15", "category": "lexical", "query": "RM 350 per night hotel", "relevant": [{"doc": "travel-and-expense.txt", "section": "Booking Business Travel"}]}
+{"id": "L16", "category": "lexical", "query": "Gift Register", "relevant": [{"doc": "code-of-conduct.txt", "section": "Gifts and Hospitality"}]}
+{"id": "L17", "category": "lexical", "query": "PDPA 2010", "relevant": [{"doc": "data-protection.txt", "section": "Personal Data We Hold"}]}
+{"id": "P01", "category": "paraphrase", "query": "How much vacation time do I get each year?", "relevant": [{"doc": "leave-policy.txt", "section": "Annual Leave"}]}
+{"id": "P02", "category": "paraphrase", "query": "I left my work notebook computer in a taxi, what should I do?", "relevant": [{"doc": "it-security.txt", "section": "Lost or Stolen Devices"}]}
+{"id": "P03", "category": "paraphrase", "query": "Can I bring my partner on a work trip at company cost?", "relevant": [{"doc": "travel-and-expense.txt", "section": "Non-Claimable Expenses"}]}
+{"id": "P04", "category": "paraphrase", "query": "Who should I talk to if I'm feeling burned out and anxious?", "relevant": [{"doc": "benefits.txt", "section": "Employee Assistance Programme"}]}
+{"id": "P05", "category": "paraphrase", "query": "A supplier offered me concert tickets, can I keep them?", "relevant": [{"doc": "code-of-conduct.txt", "section": "Gifts and Hospitality"}]}
+{"id": "P06", "category": "paraphrase", "query": "How long before I can apply for a higher position?", "relevant": [{"doc": "performance.txt", "section": "Promotions"}]}
+{"id": "P07", "category": "paraphrase", "query": "What happens if my manager says my work is not good enough?", "relevant": [{"doc": "performance.txt", "section": "Performance Improvement Plan"}]}
+{"id": "P08", "category": "paraphrase", "query": "Is the company paying for my internet bill at home?", "relevant": [{"doc": "remote-work.txt", "section": "Home Office Allowance"}]}
+{"id": "P09", "category": "paraphrase", "query": "We accidentally emailed a customer list to the wrong person", "relevant": [{"doc": "data-protection.txt", "section": "Data Breach Response"}]}
+{"id": "P10", "category": "paraphrase", "query": "My dad is in hospital and I need to rush back today", "relevant": [{"doc": "leave-policy.txt", "section": "Emergency Leave"}]}
+{"id": "P11", "category": "paraphrase", "query": "How do I get reimbursed for driving my own vehicle to a client site?", "relevant": [{"doc": "travel-and-expense.txt", "section": "Mileage Claims"}]}
+{"id": "P12", "category": "paraphrase", "query": "When do I receive my monthly pay?", "relevant": [{"doc": "onboarding.txt", "section": "Payroll and Statutory Registration"}]}
+{"id": "P13", "category": "paraphrase", "query": "Can I put an unknown thumb drive into my laptop?", "relevant": [{"doc": "it-security.txt", "section": "USB Storage"}]}
+{"id": "P14", "category": "paraphrase", "query": "Where do we gather when there's a fire?", "relevant": [{"doc": "facilities.txt", "section": "Emergency Evacuation"}]}
+{"id": "P15", "category": "paraphrase", "query": "Someone keeps making inappropriate comments to me at work", "relevant": [{"doc": "code-of-conduct.txt", "section": "Harassment and Discrimination"}]}
+{"id": "P16", "category": "paraphrase", "query": "How many quotes do I need before buying laptops worth RM 20,000?", "relevant": [{"doc": "procurement.txt", "section": "Purchase Thresholds"}]}
+{"id": "P17", "category": "paraphrase", "query": "Does the company pay for my AWS exam?", "relevant": [{"doc": "benefits.txt", "section": "Professional Certification Sponsorship"}]}
+{"id": "P18", "category": "paraphrase", "query": "I got a weird email asking me to verify my bank details", "relevant": [{"doc": "it-security.txt", "section": "Phishing and Suspicious Email"}]}
+{"id": "P19", "category": "paraphrase", "query": "How long do you keep information about people who applied but were not hired?", "relevant": [{"doc": "data-protection.txt", "section": "Data Retention"}]}
+{"id": "P20", "category": "paraphrase", "query": "Can I keep unused holiday days for next year?", "relevant": [{"doc": "leave-policy.txt", "section": "Carry Forward"}]}
+{"id": "P21", "category": "paraphrase", "query": "Am I allowed to install Spotify on my work machine?", "relevant": [{"doc": "it-security.txt", "section": "Software Installation"}]}
+{"id": "P22", "category": "paraphrase", "query": "Does the insurance cover my kids?", "relevant": [{"doc": "benefits.txt", "section": "Medical Insurance"}]}
+{"id": "M01", "category": "malay", "query": "Berapa hari cuti tahunan saya?", "relevant": [{"doc": "leave-policy.txt", "section": "Annual Leave"}], "note": "How many days of annual leave do I get?"}
+{"id": "M02", "category": "malay", "query": "Bagaimana nak tuntut perbelanjaan perjalanan?", "relevant": [{"doc": "travel-and-expense.txt", "section": "Submitting Expense Claims"}], "note": "How do I claim travel expenses?"}
+{"id": "M03", "category": "malay", "query": "Komputer riba saya hilang", "relevant": [{"doc": "it-security.txt", "section": "Lost or Stolen Devices"}], "note": "My laptop is lost"}
+{"id": "M04", "category": "malay", "query": "Cuti bersalin berapa lama?", "relevant": [{"doc": "leave-policy.txt", "section": "Maternity and Paternity Leave"}], "note": "How long is maternity leave?"}
+{"id": "M05", "category": "malay", "query": "Bila gaji dibayar setiap bulan?", "relevant": [{"doc": "onboarding.txt", "section": "Payroll and Statutory Registration"}], "note": "When is salary paid each month?"}
+{"id": "M06", "category": "malay", "query": "Di mana tempat berkumpul semasa kebakaran?", "relevant": [{"doc": "facilities.txt", "section": "Emergency Evacuation"}], "note": "Where is the assembly point during a fire?"}
+{"id": "M07", "category": "malay", "query": "Elaun kerja dari rumah", "relevant": [{"doc": "remote-work.txt", "section": "Home Office Allowance"}], "note": "Work-from-home allowance"}
+{"id": "M08", "category": "malay", "query": "Saya terima hadiah daripada pembekal", "relevant": [{"doc": "code-of-conduct.txt", "section": "Gifts and Hospitality"}], "note": "I received a gift from a supplier"}
+{"id": "U01", "category": "unanswerable", "query": "Can I bring my dog to the office?", "relevant": []}
+{"id": "U02", "category": "unanswerable", "query": "How do I apply for a company car?", "relevant": []}
+{"id": "U03", "category": "unanswerable", "query": "What is the sabbatical leave policy?", "relevant": []}
+{"id": "U04", "category": "unanswerable", "query": "How much does the CEO earn?", "relevant": []}

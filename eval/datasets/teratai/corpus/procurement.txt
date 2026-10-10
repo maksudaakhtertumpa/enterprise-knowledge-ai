@@ -1,0 +1,19 @@
+# Purchase Thresholds
+
+Purchases below RM 5,000 require one written quotation. Purchases from RM 5,000 up to RM 50,000 require three competing quotations and approval from the Head of Department. Purchases above RM 50,000 must go through an open tender managed by the Procurement team and be approved by the Chief Financial Officer.
+
+# Approved Vendor List
+
+Goods and services should be bought from vendors on the Approved Vendor List maintained by Procurement. Using a vendor that is not on the list requires a written justification and vendor onboarding before any order is placed.
+
+# Purchase Orders
+
+A purchase order (PO) must be raised and approved in the ProcureNow system before goods or services are ordered. Invoices received without a valid PO number will not be paid and are returned to the vendor. Splitting a purchase into smaller orders to avoid approval limits is prohibited.
+
+# Corporate Credit Cards
+
+Corporate cards are issued to managers for small business purchases and travel. Each card has a monthly limit of RM 10,000. Card statements must be reconciled in ExpenseOne within 10 days of the statement date with receipts attached. Personal use of the card is not allowed.
+
+# Vendor Onboarding and Due Diligence
+
+New vendors must complete the vendor registration form and provide their SSM company registration, bank details and a signed anti-bribery declaration. Vendors supplying more than RM 100,000 per year also undergo a financial health check and a background screening before they are approved.

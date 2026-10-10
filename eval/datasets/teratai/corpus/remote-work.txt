@@ -1,0 +1,23 @@
+# Eligibility
+
+Employees who have completed their probation period and whose roles do not require a physical presence may apply for a hybrid work arrangement. Roles in facilities, reception and the hardware lab are excluded. Applications are submitted through HRPortal and approved by the reporting manager.
+
+# Hybrid Schedule
+
+The standard hybrid schedule is three days in the office and two days working remotely each week. Tuesdays and Wednesdays are anchor days on which all team members are expected to be in the office. Changes to an agreed schedule must be discussed with the manager at least one week in advance.
+
+# Home Office Allowance
+
+Employees on an approved hybrid arrangement receive a home office allowance of RM 80 per month to cover internet and electricity costs. A one-off grant of up to RM 500 is available for an ergonomic chair or monitor, claimable once every three years with receipts.
+
+# Working Hours and Availability
+
+Remote working days follow normal working hours of 9:00 am to 6:00 pm, with core hours from 10:00 am to 4:00 pm during which employees must be reachable on Teams. Employees should set their Teams status accurately and respond to messages within one hour during core hours.
+
+# Security When Working Remotely
+
+Company data may only be accessed from a company laptop connected through the VPN. Working from public places such as cafes is allowed only with a privacy screen filter, and confidential calls must not be taken in public. Home Wi-Fi must be protected with WPA2 or stronger encryption.
+
+# Ending a Hybrid Arrangement
+
+Either the employee or the manager may end a hybrid arrangement with 30 days' notice. The arrangement may be withdrawn immediately if security rules are breached or if performance falls below expectations.

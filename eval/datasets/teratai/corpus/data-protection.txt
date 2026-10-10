@@ -1,0 +1,23 @@
+# Personal Data We Hold
+
+The company processes personal data of employees, job applicants, customers and suppliers, including names, identity card numbers, contact details, bank account information and, for employees, medical and payroll records. All processing must comply with the Personal Data Protection Act 2010 (PDPA) and its amendments.
+
+# Collecting and Using Personal Data
+
+Personal data may only be collected for a specific, lawful business purpose that is explained to the individual in a privacy notice. Data must not be used for unrelated purposes, such as marketing, without consent. Access is limited to staff who need it for their role.
+
+# Data Retention
+
+Personal data is kept only for as long as needed. Financial and payroll records are retained for 7 years to meet tax requirements. Records of unsuccessful job applicants are deleted after 12 months. CCTV footage is overwritten after 30 days unless it is needed for an investigation.
+
+# Data Subject Requests
+
+Individuals have the right to access and correct their personal data. Requests received by any employee must be forwarded to the Data Protection Officer (DPO) at dpo@teratai.example on the same day. The company must respond to access requests within 21 days.
+
+# Data Breach Response
+
+Any suspected loss, theft or unauthorised disclosure of personal data must be reported to the Data Protection Officer within 24 hours of discovery. The DPO assesses the incident and, where required, notifies the Personal Data Protection Commissioner and the affected individuals. Employees must not attempt to investigate a breach on their own.
+
+# Transfers Outside Malaysia
+
+Personal data may be transferred to a country outside Malaysia only when the receiving organisation provides an adequate level of protection, typically through a data processing agreement approved by the Legal team. Cloud services used for personal data must be on the IT-approved list.

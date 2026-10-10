@@ -1,0 +1,27 @@
+# Password Requirements
+
+Passwords for company systems must be at least 14 characters long and must be changed every 90 days. The last 12 passwords cannot be reused. Passwords must never be shared, written down, or stored in a browser on a personal device. The company-provided password manager, KeyVault, should be used to generate and store passwords.
+
+# Multi-Factor Authentication
+
+Multi-factor authentication (MFA) is mandatory for email, the VPN, HRPortal and all cloud applications. The approved method is the Microsoft Authenticator app on a company or personal smartphone. SMS codes are only allowed as a temporary fallback for up to seven days while a replacement phone is set up.
+
+# VPN Access
+
+Remote access to internal systems requires the GlobalConnect VPN client. The VPN must be connected before opening internal applications such as the finance system or the code repositories. VPN sessions disconnect automatically after 10 hours. Access from countries on the restricted list is blocked; staff travelling abroad should contact IT before departure.
+
+# Lost or Stolen Devices
+
+If a laptop, phone or access card is lost or stolen, report it to the IT Service Desk immediately, and in any case within two hours, by calling extension 4357 or emailing servicedesk@teratai.example. IT will remotely lock and wipe the device. A police report is required for stolen equipment and must be submitted within 24 hours.
+
+# Phishing and Suspicious Email
+
+Do not click links or open attachments in unexpected emails, even if they appear to come from a colleague. Use the Report Phish button in Outlook to send suspicious messages to the security team. Simulated phishing exercises are run every quarter, and staff who fail two in a row must repeat the security awareness module.
+
+# Software Installation
+
+Only software from the Company Portal catalogue may be installed on company laptops. Requests for other software are raised through the IT Service Desk and reviewed by the security team within five working days. Browser extensions are restricted to an approved list.
+
+# USB Storage
+
+USB flash drives and external hard disks are blocked on company laptops by default. Exceptions are granted for a maximum of 30 days with Head of Department approval, and only encrypted drives issued by IT may be used. Files should be shared through the company's OneDrive instead.
