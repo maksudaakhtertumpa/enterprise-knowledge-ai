@@ -283,7 +283,14 @@ def main() -> int:
         _, body = request(base, "GET", "/api/v1/ask/history", key)
         check(body["total"] == 2, "history records both questions")
 
-        print("\n[6] Delete")
+        print("\n[6] Analytics")
+        status, body = request(base, "GET", "/api/v1/analytics?days=7", key)
+        check(status == 200, "analytics returns 200", body)
+        q = body["questions"]
+        check((q["total"], q["answered"]) == (2, 1), "analytics counts both questions", q)
+        check(body["tokens"]["cost_usd"] == 0.0, "cost is $0")
+
+        print("\n[7] Delete")
         status, _ = request(base, "DELETE", f"/api/v1/documents/{ids['notes.txt']}", key)
         check(status == 204, "delete returns 204")
         _, body = request(

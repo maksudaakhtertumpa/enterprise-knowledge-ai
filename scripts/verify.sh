@@ -4,6 +4,8 @@
 #   ./scripts/verify.sh           # lint + tests + live smoke test + benchmark (real model)
 #   ./scripts/verify.sh --quick   # same, but with the offline hashing embedder (no download)
 #
+# Both finish with the web UI checks (needs Node.js). Browser tests: `make e2e`.
+#
 # The first full run downloads the embedding model (~1.2 GB) and the reranker (~2.3 GB)
 # into ~/.cache/huggingface, in the "Prepare models" step, with progress bars.
 set -euo pipefail
@@ -48,6 +50,15 @@ else
   python -m eval.run_retrieval
   step "Answer benchmark (local LLM; several minutes)"
   python -m eval.run_answers
+fi
+
+step "Web UI: format, lint, types, unit tests, production build"
+if command -v npm >/dev/null; then
+  if [[ ! -d web/node_modules ]]; then (cd web && npm ci --no-fund --no-audit); fi
+  (cd web && NEXT_TELEMETRY_DISABLED=1 npm run check)
+else
+  echo "Node.js not found: install the LTS version from https://nodejs.org to check the web UI."
+  exit 1
 fi
 
 step "All checks passed"

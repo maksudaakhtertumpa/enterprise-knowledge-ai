@@ -91,3 +91,14 @@ def test_unsafe_client_request_id_is_replaced(client: TestClient, bad: str) -> N
     except Exception:  # noqa: BLE001 - header rejected client-side is also acceptable
         return
     assert resp.headers["x-request-id"] != bad
+
+
+def test_no_cross_origin_browser_access_by_default(client) -> None:
+    """The web UI proxies through its own server, so browsers get no CORS grant."""
+    resp = client.get("/health", headers={"Origin": "http://evil.example"})
+    assert "access-control-allow-origin" not in resp.headers
+    pre = client.options(
+        "/api/v1/workspace",
+        headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "GET"},
+    )
+    assert "access-control-allow-origin" not in pre.headers

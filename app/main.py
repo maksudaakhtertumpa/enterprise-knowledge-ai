@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
-from app.api.routes import ask, documents, health, search, workspace
+from app.api.routes import analytics, ask, documents, health, search, workspace
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -116,6 +116,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(documents.router, prefix=settings.api_prefix)
     app.include_router(search.router, prefix=settings.api_prefix)
     app.include_router(ask.router, prefix=settings.api_prefix)
+    app.include_router(analytics.router, prefix=settings.api_prefix)
 
     return app
 

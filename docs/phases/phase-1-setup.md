@@ -38,7 +38,7 @@ curl -i http://localhost:8000/nope        # 404 in the error envelope, same requ
 | `python` not found / wrong version (Windows) | Multiple Pythons | `py -3.11 -m venv .venv` |
 | `Activate.ps1 cannot be loaded` | PowerShell execution policy | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
 | `ValidationError` at startup | Bad value in `.env` | Error names the field; compare with `.env.example` |
-| `EKA_CORS_ORIGINS` error | Lists must be JSON | `EKA_CORS_ORIGINS=["http://localhost:8501"]` |
+| `EKA_CORS_ORIGINS` error | Lists must be JSON | `EKA_CORS_ORIGINS=["http://localhost:3000"]` |
 | `Address already in use` | Port 8000 taken | `--port 8001` |
 | CI fails on `ruff format --check` | Unformatted code | `ruff format .` locally, commit |
 

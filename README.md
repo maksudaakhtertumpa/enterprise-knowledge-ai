@@ -2,11 +2,11 @@
 
 ![CI](https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai/actions/workflows/ci.yml/badge.svg)
 
-Upload company documents, search them with two-stage retrieval (dense embeddings + cross-encoder reranking, with BM25 and RRF hybrid available), and get answers grounded in the documents with **verified** source citations — or an explicit "insufficient evidence" response.
+Upload company documents through a web UI or the API, search them with two-stage retrieval (dense embeddings + cross-encoder reranking, with BM25 and RRF hybrid available), and get answers grounded in the documents with **verified** source citations — or an explicit "insufficient evidence" response.
 
-**Runs entirely on a laptop for $0:** open-source models (Qwen3-Embedding, bge-reranker, `qwen3.5:4b` via Ollama), no paid APIs, no cloud account needed.
+**Runs entirely on a laptop for $0:** open-source models (Qwen3-Embedding, bge-reranker, `qwen3.5:4b` via Ollama), a FastAPI backend and a Next.js + Tailwind CSS + shadcn/ui web app. No paid APIs, no cloud account needed.
 
-> **Status: Phase 5 of 8 complete.** Grounded answers from a local LLM, with every citation checked against the retrieved text, measured on a MacBook Air M4: 29 of 30 questions answered with verified citations, 11 of 12 unanswerable questions refused, 4 of 4 prompt-injection attacks resisted, about 5 s per answer, $0. See the [roadmap](#roadmap). Nothing is described as working until it is.
+> **Status: Phase 6 of 8 complete** (Next.js web UI with verified citations, checked on a MacBook Air M4). Grounded answers from a local LLM, with every citation checked against the retrieved text, measured on a MacBook Air M4: 29 of 30 questions answered with verified citations, 11 of 12 unanswerable questions refused, 4 of 4 prompt-injection attacks resisted, about 5 s per answer, $0. See the [roadmap](#roadmap). Nothing is described as working until it is.
 
 ## Architecture
 
@@ -14,7 +14,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full diagram, design de
 
 ## Quick start
 
-Requires **Python 3.11+**, Git and, for answers, **[Ollama](https://ollama.com/download)** (free) with `ollama pull qwen3.5:4b`.
+Requires **Python 3.11+**, **[Node.js](https://nodejs.org) 20.9+** (LTS) for the web UI, Git and, for answers, **[Ollama](https://ollama.com/download)** (free) with `ollama pull qwen3.5:4b`.
 
 **macOS / Linux** (developed on a MacBook M4; `brew install python@3.12` if needed)
 ```bash
@@ -25,9 +25,10 @@ source .venv/bin/activate
 pip install -r requirements-ml.lock && pip install -e . --no-deps   # includes PyTorch for embeddings
 cp .env.example .env
 ollama pull qwen3.5:4b                      # local LLM for answers (~3.4 GB, free)
-./scripts/verify.sh                         # lint, tests, live smoke test, benchmarks
+make web-install                            # web UI dependencies (exact versions, npm ci)
+./scripts/verify.sh                         # lint, tests, live smoke test, benchmarks, web checks
 python -m app.cli create-workspace "Demo"   # prints an API key once — copy it
-uvicorn app.main:app --reload               # first start downloads the embedding model (~1.2 GB)
+make dev                                    # API + web UI; open http://localhost:3000
 ```
 No GPU or no wish to download models? Install `requirements-dev.lock` instead and set `EKA_EMBEDDING_BACKEND=hashing`, `EKA_RERANKER_BACKEND=hashing` and `EKA_LLM_BACKEND=extractive`. These are offline stand-ins for development: not semantic, not generative.
 
@@ -42,9 +43,15 @@ Copy-Item .env.example .env
 pytest
 python -m app.cli create-workspace "Demo"
 uvicorn app.main:app --reload
+# second PowerShell window:
+cd web; npm ci; npx next dev --port 3000
 ```
 
-Then open <http://localhost:8000/docs>, click **Authorize**, paste the key, and try uploading a document.
+### Web UI
+Open <http://localhost:3000>, paste the key, upload documents (the policy files in `eval/datasets/teratai/corpus/` make a good demo), then ask questions. `make dev` starts the API and the UI together; `make run` and `make web` start them separately. See [Phase 6 notes](docs/phases/phase-6-web-ui.md).
+
+### API
+Open <http://localhost:8000/docs>, click **Authorize**, paste the key, and try uploading a document.
 
 ```bash
 curl -H "X-API-Key: $EKA_KEY" -F "file=@handbook.pdf" http://localhost:8000/api/v1/documents
@@ -62,6 +69,10 @@ curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
 | Task | Command |
 |---|---|
 | Run API (reload) | `uvicorn app.main:app --reload` |
+| Run web UI (API running) | `make web` (`cd web && npx next dev --port 3000`) |
+| API + UI together | `./scripts/dev.sh` (`--offline` for no models / no Ollama) |
+| Web UI checks | `make web-check` (Prettier, ESLint, TypeScript, Vitest, build) |
+| Web UI browser tests | `make e2e` (Playwright; first `cd web && npx playwright install chromium`) |
 | Tests | `pytest` |
 | Coverage | `pytest --cov --cov-report=term-missing` |
 | Lint | `ruff check . && ruff format --check .` |
@@ -94,6 +105,7 @@ Feature endpoints require an `X-API-Key` header; each key belongs to one workspa
 | POST | `/api/v1/ask` | Grounded answer with verified citations (quote, file, section, pages, offsets), or `insufficient_evidence` with a reason |
 | GET | `/api/v1/ask/history` | Question history for this workspace; `/ask/history/{id}` replays an answer |
 | GET | `/api/v1/evidence/{chunk_id}` | A cited passage with surrounding document text |
+| GET | `/api/v1/analytics?days=30` | Usage: questions, answer rate, refusal reasons, latency p50/p95, citation acceptance, tokens ($0), per-day counts, documents |
 | POST | `/api/v1/search` | `mode: bm25 \| dense \| hybrid` (default dense) with cross-encoder reranking (default on; `"rerank": false` for ~35 ms results); results with text, score, file, section, pages, offsets, per-retriever and pre-rerank ranks |
 
 All errors share one shape:
@@ -138,9 +150,15 @@ Every response carries an `X-Request-ID` header matching the `request_id` in log
 
   The one wrong answer (a "trick" question) cited a genuine quote but claimed more than it said. Quote verification can't catch that, so an entailment check is on the roadmap.
 
+### Web UI at a glance
+- **Stack:** Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn/ui on Radix UI; Vitest and Playwright tests.
+- **Pages:** Ask (chat with citation chips), Search (three-retriever comparison), Documents (drag-and-drop upload, live status, chunks, delete), History (replay answers), Analytics, Connect (backend status).
+- **Checkable answers:** each citation chip opens the verified quote highlighted in the passage the model saw, then in its surrounding document text. "How this answer was checked" shows what was verified, removed or rejected.
+- **Key never in the browser:** the Next.js server keeps the workspace key in an encrypted, httpOnly, SameSite=Strict cookie and proxies an allowlist of API calls. Untrusted text renders only as React text, behind a strict Content Security Policy.
+
 ## Cost
 
-The project is designed to run for **$0**: every model is open-weight and runs locally, retrieval uses SQLite and ChromaDB on disk, and CI uses GitHub Actions' free minutes for public repositories. No API keys, no paid services, no cloud account.
+The project is designed to run for **$0**: every model is open-weight and runs locally, retrieval uses SQLite and ChromaDB on disk, the web UI is open-source Next.js running on your machine (telemetry off), and CI uses GitHub Actions' free minutes for public repositories. No API keys, no paid services, no cloud account.
 
 ## Configuration
 
@@ -153,7 +171,7 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [x] **Phase 3** — BM25 (SQLite FTS5), dense (ChromaDB) and hybrid (RRF) retrieval, benchmark on Apple silicon
 - [x] **Phase 4** — Fusion tuning and cross-encoder reranking, defaults chosen from M4 measurements
 - [x] **Phase 5** — Grounded answers (local LLM), citation verification, prompt-injection defences, answer benchmark on Apple silicon
-- [ ] **Phase 6** — Streamlit UI
+- [x] **Phase 6** — Web UI (Next.js + Tailwind CSS + shadcn/ui): chat with verified citations, search comparison, document management, history, analytics
 - [ ] **Phase 7** — Evaluation (Recall@k, MRR, faithfulness, latency), security hardening; sentence-level entailment check for answers (local NLI model)
 - [ ] **Phase 8** — Docker Compose, AWS deployment, CI/CD
 
@@ -165,6 +183,7 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [Phase 3 notes](docs/phases/phase-3-retrieval.md)
 - [Phase 4 notes](docs/phases/phase-4-reranking.md)
 - [Phase 5 notes](docs/phases/phase-5-grounded-qa.md)
+- [Phase 6 notes](docs/phases/phase-6-web-ui.md)
 - [Retrieval evaluation](eval/README.md)
 
 ## License

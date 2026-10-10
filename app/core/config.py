@@ -37,8 +37,10 @@ class Settings(BaseSettings):
     # Leave unset to use SQLite inside data_dir; set for Postgres later.
     database_url: str | None = None
 
-    # --- CORS (Streamlit runs on 8501 by default) ---
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:8501"])
+    # --- CORS ---
+    # Empty by default: the web UI calls the API from its own server (Next.js route
+    # handlers), never from the browser, so no browser origin needs access.
+    cors_origins: list[str] = Field(default_factory=list)
 
     # --- Uploads ---
     max_upload_mb: int = Field(default=20, ge=1, le=200)
