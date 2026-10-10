@@ -2,7 +2,8 @@
 
 - /health        → "is the process up?"  (cheap; used by Docker/load balancers)
 - /health/ready  → "can it serve traffic?" (checks dependencies; grows each phase:
-                    data dir, database, vector store, embedding model; the LLM in Phase 5)
+                    data dir, database, vector store, models; the LLM is reported
+                    but optional, because upload and search work without it)
 """
 
 import os
@@ -72,6 +73,14 @@ def _check_reranker(request: Request, settings: Settings) -> ComponentCheck:
     return ComponentCheck(name="reranker", ok=not settings.reranker_preload, detail="not loaded")
 
 
+def _check_llm(request: Request) -> ComponentCheck:
+    llm = request.app.state.services.llm
+    if llm is None:
+        return ComponentCheck(name="llm", ok=True, detail="disabled", required=False)
+    ok, detail = llm.health()
+    return ComponentCheck(name="llm", ok=ok, detail=detail, required=False)
+
+
 @router.get(
     "/health/ready",
     response_model=ReadinessResponse,
@@ -85,7 +94,8 @@ def ready(request: Request, settings: Settings = Depends(get_settings)) -> JSONR
         _check_vector_store(request),
         _check_embedder(request, settings),
         _check_reranker(request, settings),
+        _check_llm(request),
     ]
-    is_ready = all(c.ok for c in checks)
+    is_ready = all(c.ok for c in checks if c.required)
     body = ReadinessResponse(status="ready" if is_ready else "not_ready", checks=checks)
     return JSONResponse(status_code=200 if is_ready else 503, content=body.model_dump())

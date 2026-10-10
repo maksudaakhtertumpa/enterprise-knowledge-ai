@@ -40,12 +40,14 @@ if [[ $QUICK -eq 1 ]]; then
   step "Benchmark (BM25 only — hashing is not semantic)"
   python -m eval.run_retrieval --backend hashing --modes bm25 --label quick-bm25
 else
-  step "Prepare models (first run downloads ~3.5 GB; progress bars below)"
+  step "Prepare models (first run downloads ~3.5 GB; also checks Ollama)"
   python -m app.cli prepare-models
   step "Live smoke test (real embedding model)"
   python scripts/smoke_test.py --backend sentence-transformers
-  step "Benchmark: BM25 vs dense"
+  step "Retrieval benchmark"
   python -m eval.run_retrieval
+  step "Answer benchmark (local LLM; several minutes)"
+  python -m eval.run_answers
 fi
 
 step "All checks passed"

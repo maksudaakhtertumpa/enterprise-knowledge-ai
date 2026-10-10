@@ -14,6 +14,9 @@ class ComponentCheck(BaseModel):
     name: str
     ok: bool
     detail: str | None = None
+    # Optional components (the LLM) are reported but don't make the service "not ready":
+    # upload and search still work while Ollama is stopped.
+    required: bool = True
 
 
 class ReadinessResponse(BaseModel):

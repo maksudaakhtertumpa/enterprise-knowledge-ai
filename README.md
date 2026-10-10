@@ -2,9 +2,11 @@
 
 ![CI](https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai/actions/workflows/ci.yml/badge.svg)
 
-Upload company documents, search them with hybrid retrieval (BM25 + dense vectors, fused with RRF and reranked by a cross-encoder), and get answers grounded in the documents with **verified** source citations — or an explicit "insufficient evidence" response.
+Upload company documents, search them with two-stage retrieval (dense embeddings + cross-encoder reranking, with BM25 and RRF hybrid available), and get answers grounded in the documents with **verified** source citations — or an explicit "insufficient evidence" response.
 
-> **Status: Phase 4 of 8 complete.** Upload PDF/DOCX/TXT into isolated workspaces and search them with two-stage retrieval (dense embeddings, then a cross-encoder reranker), with page and section citations. Measured on a MacBook Air M4: MRR 0.962. Next: grounded answers with verified citations; see the [roadmap](#roadmap). Nothing is described as working until it is.
+**Runs entirely on a laptop for $0:** open-source models (Qwen3-Embedding, bge-reranker, `qwen3.5:4b` via Ollama), no paid APIs, no cloud account needed.
+
+> **Status: Phase 5 of 8 complete.** Grounded answers from a local LLM, with every citation checked against the retrieved text, measured on a MacBook Air M4: 29 of 30 questions answered with verified citations, 11 of 12 unanswerable questions refused, 4 of 4 prompt-injection attacks resisted, about 5 s per answer, $0. See the [roadmap](#roadmap). Nothing is described as working until it is.
 
 ## Architecture
 
@@ -12,7 +14,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full diagram, design de
 
 ## Quick start
 
-Requires **Python 3.11+** and Git.
+Requires **Python 3.11+**, Git and, for answers, **[Ollama](https://ollama.com/download)** (free) with `ollama pull qwen3.5:4b`.
 
 **macOS / Linux** (developed on a MacBook M4; `brew install python@3.12` if needed)
 ```bash
@@ -22,11 +24,12 @@ python3.12 -m venv .venv            # 3.11 also works
 source .venv/bin/activate
 pip install -r requirements-ml.lock && pip install -e . --no-deps   # includes PyTorch for embeddings
 cp .env.example .env
-./scripts/verify.sh                         # lint, tests, live smoke test, benchmark
+ollama pull qwen3.5:4b                      # local LLM for answers (~3.4 GB, free)
+./scripts/verify.sh                         # lint, tests, live smoke test, benchmarks
 python -m app.cli create-workspace "Demo"   # prints an API key once — copy it
 uvicorn app.main:app --reload               # first start downloads the embedding model (~1.2 GB)
 ```
-No GPU or no wish to download a model? Install `requirements-dev.lock` instead and set `EKA_EMBEDDING_BACKEND=hashing` (keyword-like stand-in for development; not semantic).
+No GPU or no wish to download models? Install `requirements-dev.lock` instead and set `EKA_EMBEDDING_BACKEND=hashing`, `EKA_RERANKER_BACKEND=hashing` and `EKA_LLM_BACKEND=extractive`. These are offline stand-ins for development: not semantic, not generative.
 
 **Windows (PowerShell)**
 ```powershell
@@ -49,6 +52,9 @@ curl -H "X-API-Key: $EKA_KEY" "http://localhost:8000/api/v1/documents/<id>/chunk
 curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
      -d '{"query": "How many days of annual leave?", "top_k": 3}' \
      http://localhost:8000/api/v1/search
+curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
+     -d '{"question": "How many days of annual leave do I get?"}' \
+     http://localhost:8000/api/v1/ask
 ```
 
 ## Common commands
@@ -63,6 +69,7 @@ curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
 | Verify everything | `./scripts/verify.sh` (or `--quick` for no model download) |
 | Retrieval benchmark | `python -m eval.run_retrieval` |
 | Fusion settings sweep | `python -m eval.sweep_fusion` |
+| Answer benchmark (needs Ollama) | `python -m eval.run_answers` |
 | New workspace + key | `python -m app.cli create-workspace "Name"` |
 | Re-embed after changing model | `python -m app.cli reindex` (API stopped) |
 | List / revoke keys | `python -m app.cli list-workspaces` · `python -m app.cli revoke-key eka_XXXXXXXX` |
@@ -84,6 +91,9 @@ Feature endpoints require an `X-API-Key` header; each key belongs to one workspa
 | GET | `/api/v1/documents/{id}/chunks` | Chunks with heading, page range and character offsets |
 | POST | `/api/v1/documents/{id}/reprocess` | Re-run ingestion |
 | DELETE | `/api/v1/documents/{id}` | Delete document, chunks, index entries and stored file |
+| POST | `/api/v1/ask` | Grounded answer with verified citations (quote, file, section, pages, offsets), or `insufficient_evidence` with a reason |
+| GET | `/api/v1/ask/history` | Question history for this workspace; `/ask/history/{id}` replays an answer |
+| GET | `/api/v1/evidence/{chunk_id}` | A cited passage with surrounding document text |
 | POST | `/api/v1/search` | `mode: bm25 \| dense \| hybrid` (default dense) with cross-encoder reranking (default on; `"rerank": false` for ~35 ms results); results with text, score, file, section, pages, offsets, per-retriever and pre-rerank ranks |
 
 All errors share one shape:
@@ -115,6 +125,23 @@ Every response carries an `X-Request-ID` header matching the `request_id` in log
 
   Fusion could only trade identifier precision for paraphrase quality; the reranker improved both (lexical MRR 1.000, paraphrase 0.955) and handles Malay questions over English documents.
 
+### Answers at a glance
+- **Local LLM:** `qwen3.5:4b` through Ollama, temperature 0, JSON-only replies, explicit 8K context window. $0 per question.
+- **Citations can't be invented:** the model cites passages by number with a short quote. Each quote is checked word for word against the passage it was shown, and file names, sections and page numbers are attached from the database. A near-exact quote may differ only in filler words, never in numbers or negations.
+- **Unsupported sentences are removed.** If nothing verifiable remains, the answer is `insufficient_evidence` with a reason (no passages, weak retrieval, model declined, nothing verified).
+- **Prompt injection:** document text is fenced with a random value per request, treated as data, flagged when it looks like instructions, and can only influence answers through verified quotes. The residual risk, a model quoting a malicious document from the same workspace, is measured by a planted-attack benchmark ([details](docs/phases/phase-5-grounded-qa.md)).
+- **Measured on a MacBook Air M4** with `qwen3.5:4b` ([details](eval/README.md)):
+
+  | Answer rate | Fact recall | Citation precision | Correct refusals | Injection attacks resisted | p50 latency | Cost |
+  |---|---|---|---|---|---|---|
+  | 0.967 | 0.883 | 0.906 | 0.917 | 4 / 4 | 5.4 s | $0 |
+
+  The one wrong answer (a "trick" question) cited a genuine quote but claimed more than it said. Quote verification can't catch that, so an entailment check is on the roadmap.
+
+## Cost
+
+The project is designed to run for **$0**: every model is open-weight and runs locally, retrieval uses SQLite and ChromaDB on disk, and CI uses GitHub Actions' free minutes for public repositories. No API keys, no paid services, no cloud account.
+
 ## Configuration
 
 All settings are environment variables prefixed `EKA_`; see [.env.example](.env.example). Invalid values stop the app at startup with a message naming the field.
@@ -125,9 +152,9 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [x] **Phase 2** — Document ingestion (PDF/DOCX/TXT), structure-aware chunking, dedupe, workspace API keys
 - [x] **Phase 3** — BM25 (SQLite FTS5), dense (ChromaDB) and hybrid (RRF) retrieval, benchmark on Apple silicon
 - [x] **Phase 4** — Fusion tuning and cross-encoder reranking, defaults chosen from M4 measurements
-- [ ] **Phase 5** — Grounded answers, citation verification, prompt-injection defences
+- [x] **Phase 5** — Grounded answers (local LLM), citation verification, prompt-injection defences, answer benchmark on Apple silicon
 - [ ] **Phase 6** — Streamlit UI
-- [ ] **Phase 7** — Evaluation (Recall@k, MRR, faithfulness, latency), security hardening
+- [ ] **Phase 7** — Evaluation (Recall@k, MRR, faithfulness, latency), security hardening; sentence-level entailment check for answers (local NLI model)
 - [ ] **Phase 8** — Docker Compose, AWS deployment, CI/CD
 
 ## Project docs
@@ -137,6 +164,7 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [Phase 2 notes](docs/phases/phase-2-ingestion.md)
 - [Phase 3 notes](docs/phases/phase-3-retrieval.md)
 - [Phase 4 notes](docs/phases/phase-4-reranking.md)
+- [Phase 5 notes](docs/phases/phase-5-grounded-qa.md)
 - [Retrieval evaluation](eval/README.md)
 
 ## License

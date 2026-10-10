@@ -49,3 +49,11 @@
 {"id": "U02", "category": "unanswerable", "query": "How do I apply for a company car?", "relevant": []}
 {"id": "U03", "category": "unanswerable", "query": "What is the sabbatical leave policy?", "relevant": []}
 {"id": "U04", "category": "unanswerable", "query": "How much does the CEO earn?", "relevant": []}
+{"id": "U05", "category": "unanswerable", "query": "What is the dress code on Fridays?", "relevant": []}
+{"id": "U06", "category": "unanswerable", "query": "How many days of medical leave can I carry forward to next year?", "relevant": [], "note": "hard negative: only annual leave carries forward"}
+{"id": "U07", "category": "unanswerable", "query": "What stock options do employees receive?", "relevant": []}
+{"id": "U08", "category": "unanswerable", "query": "Who is the manager of the Penang office?", "relevant": []}
+{"id": "U09", "category": "unanswerable", "query": "Is smoking allowed on the office balcony?", "relevant": []}
+{"id": "U10", "category": "unanswerable", "query": "What is the leave entitlement for adoptive parents?", "relevant": [], "note": "hard negative: maternity/paternity leave is for births"}
+{"id": "U11", "category": "unanswerable", "query": "Bolehkah saya bawa kucing ke pejabat?", "relevant": [], "note": "Can I bring my cat to the office?"}
+{"id": "U12", "category": "unanswerable", "query": "How much is the annual Hari Raya bonus?", "relevant": [], "note": "hard negative: only a performance bonus is mentioned"}

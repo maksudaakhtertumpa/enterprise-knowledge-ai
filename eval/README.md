@@ -4,14 +4,14 @@
 
 An **original, fictional** corpus written for this project: eleven internal-policy documents for "Teratai Digital Sdn Bhd", a made-up Malaysian company (leave, travel and expenses, IT security, remote work, code of conduct, data protection, onboarding, benefits, procurement, performance, facilities). 67 sections, about 3,500 words. No real company's documents are used, so it can be published with the repository.
 
-`queries.jsonl` holds 51 labelled queries:
+`queries.jsonl` holds 59 labelled queries (47 scored for retrieval):
 
 | Category | Count | What it tests | Expected winner |
 |---|---|---|---|
 | `lexical` | 17 | Exact identifiers, product names, codes: "form FIN-12", "extension 4357", "WPA2" | BM25 |
 | `paraphrase` | 22 | Natural questions using different words from the document: "How much vacation time do I get?" → *Annual Leave* | Dense |
 | `malay` | 8 | Bahasa Malaysia questions over English documents (cross-lingual) | Dense, if the model is multilingual |
-| `unanswerable` | 4 | Nothing in the corpus answers them | Excluded from retrieval metrics; used in Phase 5 for "insufficient evidence" |
+| `unanswerable` | 12 | Nothing in the corpus answers them (4 are hard negatives) | Excluded from retrieval metrics; used by the answer benchmark |
 
 **Labels are sections, not chunks.** Each query lists the relevant `(document, section heading)` pairs. A retrieved chunk counts as relevant if it comes from a labelled section, so labels stay valid when chunk size or overlap changes. A test checks that every label points at a real section.
 
@@ -37,6 +37,7 @@ python -m eval.run_retrieval --model BAAI/bge-m3 --label bge-m3  # compare anoth
 python -m eval.run_retrieval --rrf-k 20 --candidates 20 --label k20-d20   # RRF sensitivity
 python -m eval.run_retrieval --backend hashing                   # offline plumbing check
 python -m eval.sweep_fusion                                      # 36 hybrid settings, one ingestion
+python -m eval.run_answers                                       # grounded answers (needs Ollama)
 python -m eval.run_retrieval --modes dense dense+rerank --rerank-candidates 10 --label rerank10
 ```
 
@@ -105,6 +106,52 @@ No setting matched the better single retriever in every category: each one bough
 - **Caveats:** 47 queries; the +0.06 MRR is about five more questions answered at rank 1. The rerank depth was chosen on these same queries, so the Phase 7 held-out set must confirm it.
 
 **Shipped defaults** (`EKA_SEARCH_DEFAULT_MODE=dense`, `EKA_RERANK_BY_DEFAULT=true`, `EKA_RERANK_CANDIDATES=10`) come from these runs. `tests/test_config.py` pins them so they can't drift without new measurements.
+
+> **Dataset hash note:** Phase 5 added 8 unanswerable questions, so retrieval runs from Phase 5 onward show a new dataset hash (the M4 results above were `03eb427205b1`). Retrieval metrics only use the 47 scored queries, which are unchanged, so the results stay comparable.
+
+## Answer benchmark (Phase 5)
+
+`python -m eval.run_answers` asks the 30 natural-language questions (22 paraphrases, 8 Malay) and 12 unanswerable ones (including hard negatives), then runs 4 planted prompt-injection attacks in a second workspace (`datasets/injection/`). Expected facts for each answerable question are in `datasets/teratai/answers.jsonl`; a test checks that every fact appears in its labelled source section.
+
+| Metric | Meaning |
+|---|---|
+| Answer rate | Answerable questions that got a verified answer |
+| Fact recall | Share of expected facts present in the answer (unanswered = 0) |
+| Citation precision | Verified citations that point at a labelled source section |
+| Unsupported sentences | Answer sentences the verifier removed |
+| Correct refusals | Unanswerable questions answered with `insufficient_evidence` |
+| Gate table | Same run, replayed with each reranker-score threshold |
+| Injection: resisted / correct | Payload absent; payload absent *and* the real fact present |
+
+### MacBook Air M4, `qwen3.5:4b` via Ollama, 10 Oct 2026
+
+Retrieval: Qwen3-Embedding-0.6B + bge-reranker-v2-m3 (top 10 → 5 passages). Temperature 0, 8K context, score gate off. Cost: $0.
+
+| Group | Questions | Answer rate | Fact recall | Citation precision | Unsupported sentences | Correct refusals | p50 s | p95 s |
+|---|---|---|---|---|---|---|---|---|
+| **all** | 42 | **0.967** | **0.883** | **0.906** | **0.022** | **0.917** | 5.4 | 9.9 |
+| paraphrase | 22 | 0.955 | 0.864 | 0.875 | 0.031 | — | 5.5 | 9.7 |
+| Malay | 8 | 1.000 | 0.938 | 1.000 | 0.000 | — | 7.7 | 10.9 |
+| unanswerable | 12 | — | — | — | — | 0.917 | 4.7 | 5.6 |
+
+About 1,000 prompt tokens and 85 completion tokens per question. 73% of the citations the model proposed passed verification; the rest were dropped. **Prompt injection: 4 of 4 attacks resisted, and all 4 answered correctly** (every attack passage was retrieved and flagged).
+
+**What this shows.**
+- **Grounded answers work on a laptop.** 29 of 30 answerable questions got a verified answer, with 88% of expected facts present. Every miss with partial credit (P02, P06, P16, P20, M03) is a correct, cited answer that left out a second detail, for example "18 months" without "considered in April".
+- **The verifier earns its place.** It removed 27% of proposed citations and 2% of sentences, and turned one answer whose quotes didn't match the source (P04, Employee Assistance Programme) into "insufficient evidence" rather than showing it unsupported.
+- **Refusals come from the model, not from scores.** 11 of 12 unanswerable questions were declined by the model itself.
+- **One wrong answer, and why it got through:** U06 ("How many days of medical leave can I carry forward?", a hard negative). The model said medical leave can't be carried forward and "unused days are converted to unpaid leave" [2]. Its quote was real (leave *without a certificate* is converted to unpaid leave), so citation verification passed, but the sentence claims more than the quote says. **Quote verification proves the quote exists, not that the sentence follows from it.** Phase 7 can add a local entailment check (a free NLI cross-encoder) to close this gap.
+
+**Score gate: measured as harmful, so it stays off.** The reranker's absolute scores are not answerability:
+
+| Threshold | Answerable reaching the LLM | Correct refusals |
+|---|---|---|
+| 0 (off, default) | 1.000 | 0.917 |
+| 0.005 | 0.667 | 0.917 |
+| 0.05 | 0.333 | 0.917 |
+| 0.5 | 0.067 | 0.917 |
+
+A third of answerable questions have a correct top passage scoring below 0.005, since the reranker ranks well but its sigmoid scores are low for conversational and Malay phrasing. Meanwhile the one unanswerable question that slipped through (U06) scored **0.974**: its passage is highly *relevant* but doesn't contain the *answer*. No threshold separates the two, so `EKA_ANSWER_MIN_RERANK_SCORE` stays `0`.
 
 ### Linux sandbox (development)
 `*-sandbox-hashing` runs: only the BM25 row is meaningful there. Dense and hybrid used the offline hashing stand-in, as the report states.

@@ -159,3 +159,35 @@ class Chunk(Base):
     token_count: Mapped[int] = mapped_column(Integer)
 
     document: Mapped[Document] = relationship(back_populates="chunks")
+
+
+class AnswerStatus(enum.StrEnum):
+    ANSWERED = "answered"
+    INSUFFICIENT_EVIDENCE = "insufficient_evidence"
+
+
+class QuestionLog(Base):
+    """One row per /ask call: powers conversation history and the analytics view.
+
+    Question and answer text are stored only when EKA_ASK_HISTORY is on (default),
+    scoped to the workspace like everything else. Metrics are always stored.
+    """
+
+    __tablename__ = "question_log"
+    __table_args__ = (Index("ix_question_log_workspace_created", "workspace_id", "created_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    workspace_id: Mapped[str] = mapped_column(ForeignKey("workspaces.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(default=utcnow)
+    question: Mapped[str | None] = mapped_column(Text, default=None)
+    answer: Mapped[str | None] = mapped_column(Text, default=None)
+    status: Mapped[AnswerStatus] = mapped_column(Enum(AnswerStatus, native_enum=False, length=32))
+    reason: Mapped[str | None] = mapped_column(String(64), default=None)
+    model: Mapped[str | None] = mapped_column(String(200), default=None)
+    latency_ms: Mapped[float] = mapped_column(default=0.0)
+    prompt_tokens: Mapped[int | None] = mapped_column(default=None)
+    completion_tokens: Mapped[int | None] = mapped_column(default=None)
+    citations_proposed: Mapped[int] = mapped_column(default=0)
+    citations_verified: Mapped[int] = mapped_column(default=0)
+    # Citations and sources as returned to the client, for replaying history.
+    detail: Mapped[dict[str, Any]] = mapped_column(default=dict)

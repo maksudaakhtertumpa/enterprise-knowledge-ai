@@ -48,8 +48,8 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser(
         "prepare-models",
-        help="Download (first run) and test-load the embedding model and reranker, "
-        "so the API server starts quickly",
+        help="Download (first run) and test the embedding model and reranker, and check "
+        "that Ollama answers with a verified citation",
     )
 
     args = parser.parse_args(argv)
@@ -169,8 +169,57 @@ def _prepare_models() -> int:
             ok = False
             print(f"  FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
 
+    ok = _check_llm(settings) and ok
     print("All models ready." if ok else "Some models failed to load (see above).")
     return 0 if ok else 1
+
+
+def _check_llm(settings) -> bool:
+    """Ollama running? Model pulled? Can it produce one verified, grounded answer?"""
+    import time
+
+    from app.services.generation.llm import LLMError, build_llm
+    from app.services.generation.prompt import PromptPassage, build_prompt
+    from app.services.generation.verify import ModelOutputError, parse_model_output, verify
+
+    llm = build_llm(settings)
+    if llm is None:
+        print("LLM: disabled (EKA_LLM_BACKEND=none)")
+        return True
+    print(f"LLM: {llm.model_name} ({llm.backend})")
+    healthy, detail = llm.health()
+    if not healthy:
+        print(f"  FAILED: {detail}", file=sys.stderr)
+        if llm.backend == "ollama":
+            print(
+                "  Install Ollama (free) from https://ollama.com/download, open it once, then run:"
+                f"\n    ollama pull {llm.model_name}",
+                file=sys.stderr,
+            )
+        return False
+    passages = [
+        PromptPassage(1, "Employees receive 14 days of annual leave per year.", "HR", "Leave"),
+        PromptPassage(2, "Parking is available on levels B2 and B3.", "Facilities", "Parking"),
+    ]
+    question = "How many days of annual leave do employees get?"
+    t0 = time.perf_counter()
+    try:
+        result = llm.generate(build_prompt(question, passages), question, passages)
+        checked = verify(parse_model_output(result.text), {p.number: p.text for p in passages})
+    except (LLMError, ModelOutputError) as exc:
+        print(f"  FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return False
+    seconds = time.perf_counter() - t0
+    if not checked.supported:
+        print(
+            f"  WARNING: test answer had no verified citation ({seconds:.1f} s): "
+            f"{result.text[:200]}"
+        )
+        return True  # the model runs; quality is the benchmark's job
+    print(
+        f"  ready in {seconds:.1f} s (first call includes loading); test answer: {checked.answer}"
+    )
+    return True
 
 
 def _reindex(settings, db, workspace_name: str | None) -> int:

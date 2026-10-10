@@ -87,6 +87,40 @@ class Settings(BaseSettings):
     # MRR from 0.900 to 0.962 on the benchmark.
     rerank_by_default: bool = True
 
+    # --- Answer generation (local LLM only: $0, no paid APIs) ---
+    # "ollama" = local model via Ollama; "extractive" = offline, NON-generative stand-in
+    # that quotes the best-matching sentence (tests/CI, or machines without Ollama);
+    # "none" disables /ask.
+    llm_backend: Literal["ollama", "extractive", "none"] = "ollama"
+    ollama_url: str = "http://localhost:11434"
+    ollama_model: str = "qwen3.5:4b"
+    # Context window sent explicitly: Ollama silently truncates prompts that don't fit.
+    llm_num_ctx: int = Field(default=8192, ge=2048, le=131072)
+    llm_max_answer_tokens: int = Field(default=512, ge=64, le=4096)
+    llm_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+    llm_seed: int = 7  # with temperature 0, answers are repeatable
+    llm_connect_timeout_s: float = Field(default=5.0, gt=0)
+    llm_read_timeout_s: float = Field(default=180.0, gt=0)  # first call also loads the model
+    llm_max_retries: int = Field(default=2, ge=0, le=5)
+    llm_keep_alive: str = "30m"  # keep the model in memory between questions
+
+    # --- Answering ---
+    answer_passages: int = Field(default=5, ge=1, le=20)  # evidence passages given to the LLM
+    # Skip the LLM and answer "insufficient evidence" when the best reranker score is
+    # below this. 0 = gate off. Measured on the M4 (eval/README.md): OFF is right. Any
+    # threshold > 0 dropped a third of answerable questions (relevant passages often
+    # score < 0.005) and caught no extra unanswerable ones; the model's own refusals did.
+    answer_min_rerank_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    # Keep a per-workspace history of questions and answers (shown in the UI).
+    ask_history: bool = True
+
+    @field_validator("ollama_url")
+    @classmethod
+    def _ollama_url_shape(cls, v: str) -> str:
+        if not v.startswith(("http://", "https://")):
+            raise ValueError("ollama_url must start with http:// or https://")
+        return v.rstrip("/")
+
     @field_validator("api_prefix")
     @classmethod
     def _prefix_shape(cls, v: str) -> str:

@@ -100,4 +100,9 @@ def test_rerank_isolated_by_workspace(client, auth, other_auth, corpus):
 
 def test_readiness_reports_reranker(client):
     checks = {c["name"]: c for c in client.get("/health/ready").json()["checks"]}
-    assert checks["reranker"] == {"name": "reranker", "ok": True, "detail": "overlap-v1"}
+    assert checks["reranker"] == {
+        "name": "reranker",
+        "ok": True,
+        "detail": "overlap-v1",
+        "required": True,
+    }

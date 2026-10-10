@@ -1,6 +1,6 @@
 # Model selection — MacBook M4, 16 GB unified memory
 
-These are **starting choices**, not final answers. The embedding model is wired in as of Phase 3 and the reranker as of Phase 4 (LLM: Phase 5). `python -m eval.run_retrieval --model <name>` compares embedding models on our own benchmark, and the README will report whichever wins on measured results.
+These are **starting choices**, not final answers. The embedding model is wired in as of Phase 3, the reranker as of Phase 4 and the LLM as of Phase 5. All three are free and run locally. `python -m eval.run_retrieval --model <name>` compares embedding models on our own benchmark, and the README will report whichever wins on measured results.
 
 ## Recommended stack
 
@@ -24,7 +24,7 @@ All three run on Apple-silicon GPU: sentence-transformers via PyTorch **MPS**, O
 
 ## Settings that matter on this machine
 
-- **Set the context window explicitly** (`num_ctx` ≈ 8192). If the prompt (question + retrieved chunks) exceeds Ollama's context, it is truncated *silently* — the model never sees some evidence. Phase 5 will count prompt tokens and refuse to send an over-budget prompt.
+- **Set the context window explicitly** (`num_ctx` ≈ 8192). If the prompt (question + retrieved chunks) exceeds Ollama's context, it is truncated *silently* — the model never sees some evidence. Phase 5 sends `num_ctx` explicitly, leaves out lower-ranked passages that wouldn't fit, and warns if Ollama's reported prompt size suggests truncation.
 - **Turn off "thinking" for answers.** Qwen 3.x reasoning traces add latency and tokens; grounded extraction from supplied evidence doesn't need them. (`think: false` in the Ollama API.)
 - **Batch embeddings** (e.g. 32 chunks per call) during ingestion; one-at-a-time is far slower on MPS.
 - **Rerank ~30 candidates, not 100.** Cross-encoder cost is linear in pairs.
@@ -33,7 +33,8 @@ All three run on Apple-silicon GPU: sentence-transformers via PyTorch **MPS**, O
 ## Install
 ```bash
 pip install -r requirements-ml.lock && pip install -e . --no-deps   # PyTorch + sentence-transformers (Phase 3)
-brew install ollama && ollama pull qwen3.5:4b                       # Phase 5
+# Phase 5: install the Ollama app (free) from https://ollama.com/download, open it once, then:
+ollama pull qwen3.5:4b
 ```
 Embedding and reranker weights download automatically from Hugging Face on first use (cached in `~/.cache/huggingface`). To compare embedding models: `python -m eval.run_retrieval --model BAAI/bge-m3 --label bge-m3`.
 

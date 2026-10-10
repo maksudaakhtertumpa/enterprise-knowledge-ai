@@ -1,0 +1,30 @@
+{"id": "P01", "facts": [["14"], ["18"], ["22"]]}
+{"id": "P02", "facts": [["two hours", "2 hours"], ["4357", "Service Desk", "servicedesk"]]}
+{"id": "P03", "facts": [["excluded", "not reimbursed", "not claimable", "not covered", "cannot claim", "can't claim", "cannot be claimed"]]}
+{"id": "P04", "facts": [["Employee Assistance Programme", "Employee Assistance Program", "EAP"], ["counselling", "counseling"]]}
+{"id": "P05", "facts": [["RM 200", "RM200"], ["Gift Register", "decline", "declined"]]}
+{"id": "P06", "facts": [["18 months"], ["April"]]}
+{"id": "P07", "facts": [["Performance Improvement Plan", "PIP"], ["60 days", "60-day", "60 day"]]}
+{"id": "P08", "facts": [["RM 80", "RM80"]]}
+{"id": "P09", "facts": [["Data Protection Officer", "DPO"], ["24 hours"]]}
+{"id": "P10", "facts": [["emergency leave"], ["3 days", "three days"]]}
+{"id": "P11", "facts": [["60 sen"], ["50 sen"]]}
+{"id": "P12", "facts": [["25th", "25"]]}
+{"id": "P13", "facts": [["blocked"], ["encrypted"]]}
+{"id": "P14", "facts": [["Car Park C"]]}
+{"id": "P15", "facts": [["inquiry panel"], ["30 days"]]}
+{"id": "P16", "facts": [["three quotations", "3 quotations", "three competing", "three quotes", "3 quotes"], ["Head of Department"]]}
+{"id": "P17", "facts": [["sponsor", "sponsors", "sponsored", "sponsorship"], ["examination", "exam"]]}
+{"id": "P18", "facts": [["Report Phish"]]}
+{"id": "P19", "facts": [["12 months", "twelve months"]]}
+{"id": "P20", "facts": [["5", "five"], ["31 March"]]}
+{"id": "P21", "facts": [["Company Portal"]]}
+{"id": "P22", "facts": [["children", "child", "kids"]]}
+{"id": "M01", "facts": [["14"], ["18"], ["22"]]}
+{"id": "M02", "facts": [["FIN-12", "FIN 12"], ["ExpenseOne"], ["30"]]}
+{"id": "M03", "facts": [["4357", "Service Desk", "servicedesk"], ["two hours", "2 hours", "dua jam", "2 jam"]]}
+{"id": "M04", "facts": [["98"]]}
+{"id": "M05", "facts": [["25", "25th", "25hb"]]}
+{"id": "M06", "facts": [["Car Park C", "Letak Kereta C"]]}
+{"id": "M07", "facts": [["RM 80", "RM80"]]}
+{"id": "M08", "facts": [["RM 200", "RM200"]]}

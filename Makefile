@@ -1,7 +1,7 @@
 # Shortcuts for macOS/Linux/WSL. On Windows PowerShell, run the commands
 # shown on each line directly (see README "Common commands").
 
-.PHONY: install install-ml run test cov lint format check lock smoke bench sweep verify
+.PHONY: install install-ml run test cov lint format check lock smoke bench sweep answers verify
 
 install:            ## App + dev tools (offline hashing embedder only)
 	pip install -r requirements-dev.lock && pip install -e . --no-deps
@@ -36,6 +36,9 @@ bench:              ## Retrieval benchmark: BM25 vs dense vs hybrid (writes eval
 
 sweep:              ## Try 36 hybrid fusion settings on one ingested corpus
 	python -m eval.sweep_fusion
+
+answers:            ## Answer benchmark: grounded Q&A, refusals, injection (needs Ollama)
+	python -m eval.run_answers
 
 verify:             ## Everything above, in order
 	./scripts/verify.sh

@@ -14,7 +14,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
-from app.api.routes import documents, health, search, workspace
+from app.api.routes import ask, documents, health, search, workspace
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
@@ -51,6 +51,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         reranker = app.state.services.reranker
         if reranker is not None and settings.reranker_preload:
             await asyncio.to_thread(reranker.load)
+        llm = app.state.services.llm
+        if llm is not None:
+            # Not required for startup: search works without the LLM. Warn early instead.
+            llm_ok, llm_detail = await asyncio.to_thread(llm.health)
+            if not llm_ok:
+                logger.warning("llm_not_ready", extra={"detail": llm_detail})
         logger.info(
             "startup",
             extra={
@@ -59,6 +65,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "interrupted_jobs_marked_failed": interrupted,
                 "embedding": embedder.describe(),
                 "reranker": reranker.describe() if reranker else None,
+                "llm": llm.describe() if llm else None,
             },
         )
         try:
@@ -108,6 +115,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(workspace.router, prefix=settings.api_prefix)
     app.include_router(documents.router, prefix=settings.api_prefix)
     app.include_router(search.router, prefix=settings.api_prefix)
+    app.include_router(ask.router, prefix=settings.api_prefix)
 
     return app
 

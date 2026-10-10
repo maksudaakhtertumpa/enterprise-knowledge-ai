@@ -1,6 +1,6 @@
 # Architecture & Plan
 
-Status: **Phases 1–4 complete**, verified on a MacBook Air M4. Everything marked *(planned)* below is design, not code yet.
+Status: **Phases 1–5 complete**, verified on a MacBook Air M4. Budget: **$0** (local models only). Everything marked *(planned)* below is design, not code yet.
 
 ## 1. System architecture
 
@@ -28,7 +28,7 @@ flowchart LR
         RRF --> RR[Cross-Encoder reranker]
 
         QA --> RET
-        QA --> LLM[LLM adapter: Ollama / OpenAI]
+        QA --> LLM[Local LLM via Ollama]
         LLM --> CV[Citation verifier]
     end
 
@@ -41,8 +41,8 @@ flowchart LR
 2. Dense retrieval (Chroma) returns the top 10. BM25 (FTS5) and RRF hybrid remain available per request, but measurements showed they add nothing once reranking is on.
 3. The cross-encoder rescores those 10; the top-k go to the LLM.
 4. *(Original plan: BM25 + dense fused with RRF, then rerank. The M4 benchmark showed dense + rerank is equal or better and simpler.)*
-5. LLM sees chunks wrapped as numbered, delimited *data* blocks and must cite `[c3]`-style IDs.
-6. Verifier checks every citation: the ID was actually retrieved, and any quoted span exists in that chunk. Unverifiable citations are removed; if nothing survives, the API returns `insufficient_evidence` rather than an unsupported answer.
+5. The local LLM (Ollama) sees passages fenced with a per-request random nonce as untrusted *data*, and must reply in JSON with `[n]` markers and an exact quote per cited passage.
+6. The verifier checks every citation: the passage was actually shown, and the quote occurs in it (numbers and negations must match exactly). Sentences without a verified citation are removed; if nothing survives, the API returns `insufficient_evidence` rather than an unsupported answer. Source names and pages come from the database, never from the model.
 
 ## 2. Key design decisions
 
@@ -53,7 +53,7 @@ flowchart LR
 | Auth (MVP) | Per-workspace **API keys**, stored hashed | Real authorization from Phase 2, small surface | JWT users + roles (Phase 7) |
 | Background ingestion | FastAPI `BackgroundTasks` + status column | No broker to run; status polling is enough for a single node | Celery/RQ or SQS worker |
 | UI ↔ data | Streamlit talks **only** to the API | Forces a clean API boundary; UI is replaceable | React/Next.js |
-| LLM access | Adapter interface | Swap Ollama/OpenAI by config; mockable in tests | Any provider |
+| LLM access | `LLMClient` interface; **Ollama only** ($0 rule) + offline extractive stand-in | Local, free, private; stand-in keeps CI model-free | Any provider can implement the interface |
 | Config | `pydantic-settings`, `EKA_` prefix | Typed, validated, fails fast at boot | AWS SSM / Secrets Manager |
 | Logging | Std-lib JSON + request ID | No dependency, greppable, CloudWatch-friendly | OpenTelemetry |
 
@@ -62,6 +62,8 @@ Starting model choices for the MacBook M4 (16 GB) are in [MODELS.md](MODELS.md);
 ## 3. MVP scope
 
 **In:** workspace API keys; upload PDF/DOCX/TXT with size/type validation and duplicate detection (SHA-256); page-aware chunking; BM25 + dense + RRF + rerank; grounded answers with verified citations and an insufficient-evidence path; Streamlit UI (upload, documents, chat, citation panel); evaluation on a small hand-built dataset (~40 questions) comparing the four retrieval modes; Docker Compose; CI.
+
+**Budget:** $0. Only free, open-source tools and local models; no paid APIs, no paid cloud resources.
 
 **Out (roadmap):** OCR for scanned PDFs, Qdrant/Postgres migration, streaming responses, user accounts/RBAC, multi-node deployment, autoscaling.
 
@@ -78,7 +80,7 @@ enterprise-knowledge-ai/
 │   │   ├── workspace.py        #                                       ✅
 │   │   ├── documents.py        # upload / list / delete / status       ✅
 │   │   ├── search.py           # BM25 / dense / hybrid (RRF) search    ✅
-│   │   └── ask.py              #                                       (planned P5)
+│   │   └── ask.py              # /ask, history, evidence               ✅
 │   ├── cli.py                  # workspace / API-key admin             ✅
 │   ├── schemas/                # Pydantic request/response models      ✅
 │   ├── db/                     # SQLAlchemy models + session           ✅
@@ -88,7 +90,7 @@ enterprise-knowledge-ai/
 │       ├── ingestion/          # validation, extractors, chunker       ✅
 │       ├── container.py        # service wiring (DI)                   ✅
 │       ├── retrieval/          # embeddings, FTS5, Chroma, RRF, rerank ✅
-│       ├── generation/         # llm adapters, prompts, verifier       (planned P5)
+│       ├── generation/         # Ollama client, prompts, verifier      ✅
 ├── ui/streamlit_app.py         #                                       (planned P6)
 ├── eval/                       # dataset, metrics, runner, results     ✅ (expanded P7)
 ├── scripts/                    # verify.sh, smoke_test.py              ✅

@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import Settings
 from app.db.session import build_engine, build_session_factory
+from app.services.generation.llm import LLMClient, build_llm
 from app.services.retrieval.embeddings import Embedder, build_embedder
 from app.services.retrieval.reranker import Reranker, build_reranker
 from app.services.retrieval.vector_store import VectorStore
@@ -24,6 +25,7 @@ class Services:
     embedder: Embedder
     vectors: VectorStore
     reranker: Reranker | None = None
+    llm: LLMClient | None = None
 
     def close(self) -> None:
         """Release file handles and connections (called on shutdown)."""
@@ -40,4 +42,5 @@ def build_services(settings: Settings) -> Services:
         embedder=build_embedder(settings),
         vectors=VectorStore(settings.chroma_dir),
         reranker=build_reranker(settings),
+        llm=build_llm(settings),
     )

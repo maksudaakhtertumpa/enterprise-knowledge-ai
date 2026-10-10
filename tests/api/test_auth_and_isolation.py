@@ -114,6 +114,7 @@ def test_cli_create_list_issue_revoke(monkeypatch, tmp_path, capsys):
 def test_cli_prepare_models_reports_each_model(monkeypatch, capsys):
     monkeypatch.setenv("EKA_EMBEDDING_BACKEND", "hashing")
     monkeypatch.setenv("EKA_RERANKER_BACKEND", "hashing")
+    monkeypatch.setenv("EKA_LLM_BACKEND", "extractive")
     from app.core.config import get_settings
 
     get_settings.cache_clear()
@@ -121,6 +122,16 @@ def test_cli_prepare_models_reports_each_model(monkeypatch, capsys):
         assert cli(["prepare-models"]) == 0
         out = capsys.readouterr().out
         assert "hashing-v1" in out and "overlap-v1" in out and "All models ready." in out
+        assert "test answer: Employees receive 14 days" in out
+
+        # Ollama not running: fail with install instructions.
+        monkeypatch.setenv("EKA_LLM_BACKEND", "ollama")
+        monkeypatch.setenv("EKA_OLLAMA_URL", "http://127.0.0.1:9")
+        get_settings.cache_clear()
+        assert cli(["prepare-models"]) == 1
+        err = capsys.readouterr().err
+        assert "ollama.com/download" in err and "ollama pull qwen3.5:4b" in err
+        monkeypatch.setenv("EKA_LLM_BACKEND", "extractive")
 
         monkeypatch.setenv("EKA_RERANKER_BACKEND", "none")
         get_settings.cache_clear()

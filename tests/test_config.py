@@ -50,3 +50,4 @@ def test_shipped_search_defaults_match_measured_decisions() -> None:
     assert s.rerank_by_default is True
     assert s.rerank_candidates == 10
     assert (s.rrf_k, s.hybrid_bm25_weight, s.hybrid_candidates) == (10, 0.25, 20)
+    assert s.answer_min_rerank_score == 0.0  # gate measured as harmful (Phase 5)

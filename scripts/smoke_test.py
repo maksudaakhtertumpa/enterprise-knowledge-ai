@@ -2,7 +2,8 @@
 
 Starts uvicorn on a free port with a throwaway data directory, creates a
 workspace, uploads a real PDF, DOCX and TXT, waits for ingestion, checks the
-chunks and isolation, runs searches (BM25, dense, hybrid and reranked), then shuts down.
+chunks and isolation, runs searches (BM25, dense, hybrid and reranked), asks
+grounded questions, then shuts down.
 
     python scripts/smoke_test.py                 # uses EKA_EMBEDDING_BACKEND from env/.env
     python scripts/smoke_test.py --backend hashing   # no model download (fast, not semantic)
@@ -94,6 +95,8 @@ def main() -> int:
         env["EKA_EMBEDDING_BACKEND"] = args.backend
         # Offline embedder -> offline reranker; real embedder -> real cross-encoder.
         env["EKA_RERANKER_BACKEND"] = "hashing" if args.backend == "hashing" else "cross-encoder"
+        # Offline run -> extractive stand-in; real run -> Ollama.
+        env["EKA_LLM_BACKEND"] = "extractive" if args.backend == "hashing" else "ollama"
     port = free_port()
     base = f"http://127.0.0.1:{port}"
 
@@ -245,7 +248,42 @@ def main() -> int:
         )
         check(body["results"] == [], "other workspace's search sees nothing")
 
-        print("\n[5] Delete")
+        print("\n[5] Ask (grounded answers)")
+        t0 = time.perf_counter()
+        status, body = request(
+            base,
+            "POST",
+            "/api/v1/ask",
+            key,
+            body={"question": "How often must passwords be changed?"},
+        )
+        ms = (time.perf_counter() - t0) * 1000
+        check(status == 200, "ask returns 200", body)
+        print(f"          answer ({ms / 1000:.1f} s, {body.get('model')}): {body.get('answer')}")
+        check(body["status"] == "answered", "answerable question is answered", body.get("reason"))
+        files_cited = {c["source"]["filename"] for c in body["citations"]}
+        check("notes.txt" in files_cited, "answer cites the password policy", files_cited)
+        check(
+            all(f"[{c['marker']}]" in body["answer"] for c in body["citations"]),
+            "every citation appears in the answer",
+        )
+        status, body = request(
+            base, "POST", "/api/v1/ask", key, body={"question": "Can I bring my dog to the office?"}
+        )
+        print(f"          unanswerable -> {body['status']} ({body.get('reason')})")
+        check(body["status"] == "insufficient_evidence", "unanswerable question is refused")
+        _, body = request(
+            base,
+            "POST",
+            "/api/v1/ask",
+            other,
+            body={"question": "How often must passwords be changed?"},
+        )
+        check(body["evidence"] == [], "other workspace's question sees no evidence")
+        _, body = request(base, "GET", "/api/v1/ask/history", key)
+        check(body["total"] == 2, "history records both questions")
+
+        print("\n[6] Delete")
         status, _ = request(base, "DELETE", f"/api/v1/documents/{ids['notes.txt']}", key)
         check(status == 204, "delete returns 204")
         _, body = request(

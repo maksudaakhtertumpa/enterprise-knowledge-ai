@@ -33,6 +33,7 @@ def test_readiness_503_when_data_dir_unusable(tmp_path) -> None:
         data_dir=blocker / "data",
         embedding_backend="hashing",
         reranker_backend="hashing",
+        llm_backend="extractive",
         _env_file=None,
     )
     app = create_app(settings)
@@ -44,7 +45,12 @@ def test_readiness_503_when_data_dir_unusable(tmp_path) -> None:
     assert resp.status_code == 503
     body = resp.json()
     assert body["status"] == "not_ready"
-    assert body["checks"][0] == {"name": "data_dir", "ok": False, "detail": "NotADirectoryError"}
+    assert body["checks"][0] == {
+        "name": "data_dir",
+        "ok": False,
+        "detail": "NotADirectoryError",
+        "required": True,
+    }
 
 
 def test_openapi_schema_is_served(client: TestClient) -> None:
