@@ -9,7 +9,7 @@ Ask questions about your company's documents and get answers that cite the exact
 [![CI](https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai/actions/workflows/ci.yml) ![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square) ![Cost: $0](https://img.shields.io/badge/cost-%240%20%C2%B7%20runs%20locally-2EA44F?style=flat-square)  
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white) ![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat-square&logo=pydantic&logoColor=white) ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white) ![SQLite FTS5](https://img.shields.io/badge/SQLite%20FTS5-003B57?style=flat-square&logo=sqlite&logoColor=white) ![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6446?style=flat-square)  
 ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white) ![Hugging Face](https://img.shields.io/badge/Hugging%20Face-FFD21E?style=flat-square&logo=huggingface&logoColor=black) ![Ollama](https://img.shields.io/badge/Ollama-000000?style=flat-square&logo=ollama&logoColor=white) ![Apple silicon](https://img.shields.io/badge/Apple%20silicon%20(MPS)-000000?style=flat-square&logo=apple&logoColor=white)  
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000000?style=flat-square&logo=shadcnui&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat-square&logo=playwright&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000000?style=flat-square&logo=shadcnui&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat-square&logo=playwright&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white) ![AWS (design)](https://img.shields.io/badge/AWS-design%20only-232F3E?style=flat-square&logo=amazonwebservices&logoColor=white)
 
 | Keyword vs semantic vs hybrid search | Phone, dark mode, a question in Malay |
 |---|---|
@@ -17,7 +17,7 @@ Ask questions about your company's documents and get answers that cite the exact
 
 **Runs on a laptop for $0:** open-weight models on the Apple GPU (Qwen3-Embedding, bge-reranker-v2-m3, mDeBERTa NLI) and `qwen3.5:4b` through Ollama. No paid APIs, no cloud account. Screenshots are real output on a MacBook Air M4 (`./scripts/screenshots.sh` retakes them).
 
-> **Status: Phase 7 of 8 complete** (measured on a MacBook Air M4, $0). Grounded answers from a local LLM: every citation is checked against the retrieved text, and every sentence is checked by a local NLI model for whether its sources actually support it. On **held-out** questions never used for tuning: retrieval MRR 1.000 (38 queries); 25 of 30 answerable questions answered, each with all its expected facts and citations to the right sections (the other 5 refused); 9 of 10 unanswerable questions refused; about 5 s per answer. Rate limits, security headers, a dependency audit and a [threat model](docs/SECURITY.md) cover the hardening. Full numbers and charts: [evaluation report](docs/evaluation/README.md). Nothing is described as working until it is.
+> **Status: all 8 phases complete** (measured on a MacBook Air M4, $0). Runs natively (`make dev`) or in hardened Docker containers (`make docker-up`), with CI building and testing the containers on every push; the AWS deployment is [designed and costed](docs/AWS.md), not deployed. Grounded answers from a local LLM: every citation is checked against the retrieved text, and every sentence is checked by a local NLI model for whether its sources actually support it. On **held-out** questions never used for tuning: retrieval MRR 1.000 (38 queries); 25 of 30 answerable questions answered, each with all its expected facts and citations to the right sections (the other 5 refused); 9 of 10 unanswerable questions refused; about 5 s per answer. Rate limits, security headers, a dependency audit and a [threat model](docs/SECURITY.md) cover the hardening. Full numbers and charts: [evaluation report](docs/evaluation/README.md). Nothing is described as working until it is.
 
 ## Features
 
@@ -29,6 +29,7 @@ Ask questions about your company's documents and get answers that cite the exact
 - **Workspaces** with hashed API keys; each workspace has its own keyword and vector indexes, so one can never see another's documents.
 - **Web UI** (Next.js, Tailwind CSS, shadcn/ui): chat with citation chips, "how this answer was checked", search comparison, history, analytics, dark mode, phone layout. The API key never reaches the browser.
 - **Measured, not claimed:** retrieval and answer benchmarks on a development set and a held-out set, with an [evaluation report and charts](docs/evaluation/README.md).
+- **Containers:** API and web images with non-root users, read-only filesystems and health checks; one command (`make docker-up`) starts the stack, and CI runs an end-to-end smoke test against it.
 - **Hardening:** rate limits, security headers, prompt-injection defences tested with planted documents, dependency audit in CI, [threat model](docs/SECURITY.md).
 
 ## How it works
@@ -56,7 +57,7 @@ graph LR
 | Verify | Each quote must appear in the passage it cites (numbers and negations exactly). Sentences without a verified citation are dropped. |
 | Entailment | Each remaining sentence is scored against its cited passage and that passage's 1–3-sentence windows; below 0.75 it is removed. |
 
-More detail: [architecture](docs/ARCHITECTURE.md) · [security](docs/SECURITY.md) · [evaluation](docs/evaluation/README.md) · phase notes in [docs/phases/](docs/phases/).
+More detail: [architecture](docs/ARCHITECTURE.md) · [security](docs/SECURITY.md) · [evaluation](docs/evaluation/README.md) · [AWS design](docs/AWS.md) · phase notes in [docs/phases/](docs/phases/).
 
 <details>
 <summary><b>More screenshots</b></summary>
@@ -72,6 +73,20 @@ More detail: [architecture](docs/ARCHITECTURE.md) · [security](docs/SECURITY.md
 </details>
 
 ## Quick start
+
+### With Docker (simplest)
+
+Needs [Docker Desktop](https://www.docker.com/products/docker-desktop/) (free for personal use) and, for answers, [Ollama](https://ollama.com/download) running on your computer with `ollama pull qwen3.5:4b`.
+```bash
+git clone https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai.git
+cd enterprise-knowledge-ai
+make docker-up                                                     # build and start (first time a few minutes)
+docker compose exec api python -m app.cli create-workspace "Demo"  # prints an API key once
+open http://localhost:3000
+```
+Models are read from `~/.cache/huggingface`; on a fresh machine run `EKA_HF_OFFLINE=0 make docker-up` once to download them (~3.8 GB). In Docker the retrieval models run on the CPU, so answers take about twice as long as natively on a Mac ([measurements](docs/phases/phase-8-docker-cicd-aws.md)). No Ollama or models at all? `make docker-offline` runs the small image with offline stand-ins.
+
+### Natively (fastest on a Mac)
 
 Requires **Python 3.11+**, **[Node.js](https://nodejs.org) 20.9+** (LTS) for the web UI, Git and, for answers, **[Ollama](https://ollama.com/download)** (free) with `ollama pull qwen3.5:4b`.
 
@@ -143,6 +158,7 @@ curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
 | Held-out benchmarks (don't tune on these) | `make heldout` |
 | Evaluation report with charts | `python -m eval.report` → [docs/evaluation/](docs/evaluation/README.md) |
 | Dependency vulnerability scan | `make audit` (pip-audit + npm audit) |
+| Docker: start / check / logs / stop | `make docker-up` · `make docker-smoke` · `make docker-logs` · `make docker-down` |
 | Retake the README screenshots | `./scripts/screenshots.sh` (real models; own ports and temporary data) |
 | New workspace + key | `python -m app.cli create-workspace "Name"` |
 | Re-embed after changing model | `python -m app.cli reindex` (API stopped) |
@@ -225,7 +241,7 @@ Every response carries an `X-Request-ID` header matching the `request_id` in log
 
 ## Cost
 
-The project is designed to run for **$0**: every model is open-weight and runs locally, retrieval uses SQLite and ChromaDB on disk, the web UI is open-source Next.js running on your machine (telemetry off), and CI uses GitHub Actions' free minutes for public repositories. No API keys, no paid services, no cloud account.
+The project is designed to run for **$0**: every model is open-weight and runs locally, retrieval uses SQLite and ChromaDB on disk, the web UI is open-source Next.js running on your machine (telemetry off), CI uses GitHub Actions' free minutes for public repositories, and Docker Desktop is free for personal use. No API keys, no paid services, no cloud account. Running it on AWS would cost money (mostly the GPU, roughly $221–734 a month); [AWS.md](docs/AWS.md) has the design and the numbers, and nothing is deployed.
 
 ## Configuration
 
@@ -240,7 +256,7 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [x] **Phase 5** — Grounded answers (local LLM), citation verification, prompt-injection defences, answer benchmark on Apple silicon
 - [x] **Phase 6** — Web UI (Next.js + Tailwind CSS + shadcn/ui): chat with verified citations, search comparison, document management, history, analytics
 - [x] **Phase 7** — Sentence-level entailment check (local NLI), held-out evaluation with charts, rate limiting, security headers, dependency audit, threat model
-- [ ] **Phase 8** — Docker Compose, AWS deployment, CI/CD
+- [x] **Phase 8** — Docker images and Compose stack (hardened, smoke-tested in CI), GitHub Actions CI/CD, AWS deployment design with costs
 
 ## Project docs
 - [Architecture & plan](docs/ARCHITECTURE.md)
@@ -252,6 +268,8 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [Phase 5 notes](docs/phases/phase-5-grounded-qa.md)
 - [Phase 6 notes](docs/phases/phase-6-web-ui.md)
 - [Phase 7 notes](docs/phases/phase-7-evaluation-security.md)
+- [Phase 8 notes](docs/phases/phase-8-docker-cicd-aws.md)
+- [AWS deployment design](docs/AWS.md)
 - [Evaluation report with charts](docs/evaluation/README.md)
 - [Security notes and threat model](docs/SECURITY.md)
 - [Retrieval evaluation](eval/README.md)

@@ -1,0 +1,8 @@
+# The API image needs only app/ and the lock files. Keep everything else out:
+# smaller context, faster builds, and no secrets or local data in an image layer.
+*
+!app/
+!requirements.lock
+!requirements-docker.lock
+**/__pycache__
+**/*.pyc

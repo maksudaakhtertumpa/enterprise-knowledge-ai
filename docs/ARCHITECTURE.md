@@ -1,6 +1,6 @@
 # Architecture & Plan
 
-Status: **Phases 1–7 complete**, verified on a MacBook Air M4. Budget: **$0** (local models only). Everything marked *(planned)* below is design, not code yet.
+Status: **all 8 phases complete**, verified on a MacBook Air M4. The AWS deployment is a design ([AWS.md](AWS.md)), not deployed. Budget: **$0** (local models only).
 
 ## 1. System architecture
 
@@ -95,7 +95,7 @@ enterprise-knowledge-ai/
 │   ├── db/                     # SQLAlchemy models + session           ✅
 │   ├── repositories/           # workspace-scoped queries              ✅
 │   └── services/
-│       ├── storage.py          # local file storage (S3 in P8)         ✅
+│       ├── storage.py          # local file storage (S3 in the AWS design) ✅
 │       ├── ingestion/          # validation, extractors, chunker       ✅
 │       ├── container.py        # service wiring (DI)                   ✅
 │       ├── retrieval/          # embeddings, FTS5, Chroma, RRF, rerank ✅
@@ -109,7 +109,7 @@ enterprise-knowledge-ai/
 ├── scripts/                    # verify.sh, smoke_test.py              ✅
 ├── tests/                      # unit + API tests                      ✅
 ├── docs/                       # architecture, SECURITY.md, evaluation/, phases/
-├── docker/ + docker-compose.yml#                                       (planned P8)
+├── docker/, compose.yaml       # API (ml/lite) + web images, hardened stack ✅
 ├── .github/workflows/ci.yml    #                                       ✅
 ├── pyproject.toml, requirements*.lock, Makefile, .env.example         ✅
 ```
@@ -127,7 +127,7 @@ Target: a demo-able MVP **by early December** so it is on your CV while applicat
 | 6–7 | 16–29 Nov | 5 Grounded QA ✅ | Answers with verified citations; injection test docs don't change behaviour |
 | 8 | 30 Nov–6 Dec | 6 Web UI, Next.js ✅ | **MVP demo** — record screenshots/GIF |
 | 9–10 | 7–20 Dec | 7 Eval + hardening ✅ | Held-out set, charts, entailment check, rate limits, security headers, dependency audit |
-| 11–12 | 21 Dec–3 Jan | 8 Docker + AWS | `docker compose up` works; deployed once, costs documented |
+| 11–12 | 21 Dec–3 Jan | 8 Docker + AWS ✅ | `make docker-up` works and is smoke-tested in CI; AWS designed and costed ($0 rule: not deployed) |
 | 13+ | Jan | Polish | README, demo video, interview notes |
 
 Adjust around exams — phases are sized so any one can slip a week without breaking the next.

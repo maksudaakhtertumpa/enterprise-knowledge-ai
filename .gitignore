@@ -30,3 +30,6 @@ data/
 .DS_Store
 Thumbs.db
 data-*/
+
+# Docker: web session secret
+docker/web.env

@@ -1,7 +1,7 @@
 # Shortcuts for macOS/Linux/WSL. On Windows PowerShell, run the commands
 # shown on each line directly (see README "Common commands").
 
-.PHONY: install install-ml run web-install web dev web-check e2e test cov lint format check lock smoke bench sweep answers heldout report audit verify
+.PHONY: install install-ml run web-install web dev web-check e2e test cov lint format check lock smoke bench sweep answers heldout report audit verify docker-up docker-offline docker-smoke docker-logs docker-down
 
 install:            ## App + dev tools (offline hashing embedder only)
 	pip install -r requirements-dev.lock && pip install -e . --no-deps
@@ -74,7 +74,25 @@ audit:              ## Known-vulnerability scan of pinned Python and web depende
 		--ignore-vuln PYSEC-2026-3814 --ignore-vuln PYSEC-2026-3815
 	cd web && npm audit --omit=dev --audit-level=high
 
+docker-up:          ## API + web UI in Docker (real models; Ollama stays on the Mac) -> http://localhost:3000
+	./scripts/docker-setup.sh
+	docker compose up -d --build --wait --wait-timeout 900
+
+docker-offline:     ## Same with the small "lite" image and offline stand-ins (no models, no Ollama)
+	./scripts/docker-setup.sh
+	docker compose --env-file docker/offline.env up -d --build --wait --wait-timeout 300
+
+docker-smoke:       ## End-to-end check of the running Docker stack
+	./scripts/docker-smoke.sh
+
+docker-logs:        ## Follow the containers' logs
+	docker compose logs -f
+
+docker-down:        ## Stop the containers (your documents stay in the Docker volume)
+	docker compose down
+
 lock:               ## Re-pin dependencies (needs uv: pip install uv)
 	uv pip compile --universal pyproject.toml --python-version 3.11 -o requirements.lock
 	uv pip compile --universal pyproject.toml --extra dev --python-version 3.11 -o requirements-dev.lock
 	uv pip compile --universal pyproject.toml --extra dev --extra ml --python-version 3.11 -o requirements-ml.lock
+	./scripts/lock-docker.sh

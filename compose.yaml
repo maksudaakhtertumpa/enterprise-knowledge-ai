@@ -1,0 +1,93 @@
+# Enterprise Knowledge AI: API + web UI in containers, local only, $0.
+#
+#   ./scripts/docker-setup.sh        # once: web session secret (docker/web.env)
+#   docker compose up -d --build     # or: make docker-up
+#   open http://localhost:3000
+#
+# The local LLM stays outside Docker: Ollama on your Mac uses the Apple GPU, which
+# containers cannot. The API reaches it at host.docker.internal:11434.
+#
+# Both ports are published on 127.0.0.1 only, so other devices on the Wi-Fi can't
+# connect. The web UI talks to the API over the private compose network.
+
+name: eka
+
+x-hardening: &hardening
+  read_only: true # root filesystem read-only; writes go to volumes and /tmp only
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp:size=256m"]
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options: { max-size: "10m", max-file: "3" }
+
+services:
+  api:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      args:
+        FLAVOR: ${EKA_DOCKER_FLAVOR:-ml}
+    image: eka-api:${EKA_DOCKER_FLAVOR:-ml}
+    environment:
+      EKA_ENVIRONMENT: production # /docs off; set EKA_API_DOCS=true to turn it on
+      EKA_API_DOCS: ${EKA_API_DOCS:-false}
+      EKA_LOG_JSON: "true"
+      EKA_DATA_DIR: /data
+      EKA_OLLAMA_URL: http://host.docker.internal:11434
+      EKA_OLLAMA_MODEL: ${EKA_OLLAMA_MODEL:-qwen3.5:4b}
+      EKA_EMBEDDING_BACKEND: ${EKA_EMBEDDING_BACKEND:-sentence-transformers}
+      EKA_RERANKER_BACKEND: ${EKA_RERANKER_BACKEND:-cross-encoder}
+      EKA_ENTAILMENT_BACKEND: ${EKA_ENTAILMENT_BACKEND:-nli}
+      EKA_LLM_BACKEND: ${EKA_LLM_BACKEND:-ollama}
+      # Containers on a Mac have no GPU: models run on the CPU.
+      EKA_EMBEDDING_DEVICE: cpu
+      EKA_RERANKER_DEVICE: cpu
+      EKA_ENTAILMENT_DEVICE: cpu
+      HF_HOME: /models/huggingface
+      # Models come from the mounted cache; set to 0 for the first download.
+      HF_HUB_OFFLINE: ${EKA_HF_OFFLINE:-1}
+      TOKENIZERS_PARALLELISM: "false"
+    volumes:
+      - eka-data:/data
+      # Reuse the models already downloaded on the Mac (no second 4.6 GB download).
+      - ${EKA_HF_CACHE:-~/.cache/huggingface}:/models/huggingface
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Linux; Docker Desktop provides it already
+    ports:
+      - "127.0.0.1:8000:8000"
+    deploy:
+      resources:
+        limits:
+          memory: ${EKA_API_MEMORY:-7g}
+
+  web:
+    <<: *hardening
+    build:
+      context: ./web
+      dockerfile: ../docker/web.Dockerfile
+    image: eka-web:latest
+    environment:
+      EKA_API_URL: http://api:8000
+    env_file:
+      # EKA_WEB_SESSION_SECRET, made by scripts/docker-setup.sh. Without it the web
+      # server makes a random secret at each start (secure, but restarts log you out).
+      - path: docker/web.env
+        required: false
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+
+volumes:
+  eka-data:
+    # Separate data per image flavor: an index built with the offline stand-ins
+    # would not match the real embedding model.
+    name: eka-data-${EKA_DOCKER_FLAVOR:-ml}
