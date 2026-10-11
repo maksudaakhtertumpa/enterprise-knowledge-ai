@@ -37,7 +37,7 @@ from typing import Any, Protocol
 
 from app.core.config import Settings
 from app.services.generation.verify import split_sentences
-from app.services.retrieval.embeddings import resolve_device
+from app.services.retrieval.embeddings import inference_lock, resolve_device
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +185,7 @@ class NLIEntailmentChecker:
             return []
         if self._model is None:
             self.load()
-        with self._infer_lock:
+        with inference_lock(self.device, self._infer_lock):
             probs = self._model.predict(
                 pairs,
                 batch_size=self.batch_size,

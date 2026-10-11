@@ -54,6 +54,19 @@ class Embedder(Protocol):
     def describe(self) -> dict[str, Any]: ...
 
 
+# Metal (MPS) must not be driven from several threads at once: two models encoding
+# GPU work concurrently abort the whole process ("failed assertion _status <
+# MTLCommandBufferStatusCommitted"). Found in Phase 7 when the web UI's three-way
+# search ran the embedder and the reranker in parallel request threads. Every model
+# on MPS (embedder, reranker, entailment) shares this one lock.
+_MPS_LOCK = threading.Lock()
+
+
+def inference_lock(device: str | None, own: threading.Lock) -> threading.Lock:
+    """The lock to hold while a model runs: shared on MPS, the model's own elsewhere."""
+    return _MPS_LOCK if device == "mps" else own
+
+
 def resolve_device(preference: str) -> str:
     """auto -> cuda, then mps (Apple silicon), then cpu."""
     import torch
@@ -149,7 +162,7 @@ class SentenceTransformerEmbedder:
             return []
         model = self._require()
         encode = getattr(model, "encode_document", model.encode)
-        with self._infer_lock:
+        with inference_lock(self.device, self._infer_lock):
             vectors = encode(
                 texts,
                 batch_size=self.batch_size,
@@ -163,7 +176,7 @@ class SentenceTransformerEmbedder:
         model = self._require()
         # encode_query applies the model's query instruction (Qwen3 uses one).
         encode = getattr(model, "encode_query", model.encode)
-        with self._infer_lock:
+        with inference_lock(self.device, self._infer_lock):
             vector = encode(
                 [text], normalize_embeddings=True, convert_to_numpy=True, show_progress_bar=False
             )[0]

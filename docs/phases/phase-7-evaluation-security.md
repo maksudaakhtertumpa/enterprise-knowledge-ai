@@ -29,6 +29,8 @@
 
 **Rate limits in process memory.** One uvicorn process serves this project, so an in-memory token bucket is correct and needs no Redis. Buckets are bounded (10,000 keys, least recently used dropped, which can only ever *allow* a request). `X-Forwarded-For` is believed only from `EKA_TRUSTED_PROXIES`, reading right to left so a client can't spoof its address. Successful requests never spend auth tokens, so a valid user isn't locked out by their own traffic.
 
+**One lock for the Apple GPU (bug found while taking the README screenshots).** The web UI's "Compare all three" search sends three requests at once. Each ran the embedder and the reranker on MPS from its own thread, each model holding only its own lock, and Metal aborted the whole API process (`failed assertion _status < MTLCommandBufferStatusCommitted`). Every model on MPS (embedder, reranker, NLI) now shares one inference lock; on CPU and CUDA each keeps its own. `tests/retrieval/test_mps_lock.py` runs the three models from 12 threads with fake models and asserts that at most one is ever running on MPS (it fails without the fix). The answer benchmark never hit this because it asks one question at a time.
+
 **Accepted dependency findings, not silenced ones.** pip-audit reports four ChromaDB advisories with no fixed release. All concern Chroma's HTTP server, which this project never runs (embedded `PersistentClient`, `embedding_function=None`). They are ignored by ID in CI with that reason written next to them and in `docs/SECURITY.md`; any other finding fails the build.
 
 ## Results (MacBook Air M4, measured 11 Oct 2026)
@@ -77,7 +79,7 @@ Cost: $0. Latency: the check adds ~0.3–0.5 s to a 5–7 s answer.
 | Benchmarks | Threshold simulation, held-out set well-formed and disjoint from development, every expected fact present in its labelled section, report generator and SVGs | `tests/eval/` |
 | Web | Proxy passes `429` + `Retry-After` through; entailment panel in a real browser | `routes.test.ts`, `e2e/app.spec.ts` |
 
-Python: 437 tests. Web: 54 unit tests, 11 browser tests.
+Python: 440 tests. Web: 54 unit tests, 11 browser tests.
 
 ## Run it
 
@@ -101,6 +103,7 @@ make audit                                     # dependency vulnerability scan
 | Many correct sentences removed | Premise set to whole passages, or threshold too high | Keep `EKA_ENTAILMENT_GRANULARITY=sentences`; check the threshold table in `docs/evaluation/` |
 | `429 rate_limited` while testing | Burst used up | Wait `Retry-After` seconds, raise `EKA_RATE_LIMIT_*`, or `EKA_RATE_LIMIT_ENABLED=false` locally |
 | Everyone using the web UI gets "too many failed key attempts" | All UI traffic comes from 127.0.0.1, so it shares the auth-failure bucket | Wait a minute; behind a real proxy set `EKA_TRUSTED_PROXIES` |
+| API process exits with `failed assertion _status < MTLCommandBufferStatusCommitted` | Two models used the Apple GPU at the same time (fixed in Phase 7) | Make sure `embeddings.py`, `reranker.py` and `entailment.py` use `inference_lock(...)` |
 | `/docs` returns 404 | `EKA_ENVIRONMENT=production` | `EKA_API_DOCS=true` if you really want it |
 | CI `audit` job fails | A new advisory | Upgrade the package (`make lock`); only accept it with a written reason in `docs/SECURITY.md` |
 | `python -m eval.report` says no runs | Only offline runs exist | Run the benchmarks with real models, or `--include-standins` (labelled) |

@@ -42,6 +42,25 @@ Fact recall counts an expected fact as found when one of its accepted wordings
 appears in the answer; it does not judge whether the rest of the answer is right.
 Cost is $0 for every run: all models run locally.
 
+### With the entailment check (threshold 0.75)
+
+The table above is the model alone. This is what the shipped configuration
+returns: sentences below the threshold removed, empty answers refused.
+
+| Dataset | Answer rate | Fact recall | Correct refusals | Sentences removed |
+|---|---|---|---|---|
+| development | 0.900 | 0.817 | 1.000 | 0.098 |
+| held-out | 0.833 | 0.833 | 0.900 | 0.035 |
+
+### Ablation: what the NLI model reads as the premise (development set)
+
+| Premise | Threshold | Answer rate | Fact recall | Correct refusals | Sentences removed | Run |
+|---|---|---|---|---|---|---|
+| passage | 0.5 | 0.800 | 0.667 | 1.000 | 0.268 | `20261011-045408-answers-qwen3.5-4b.json` |
+| passage | 0.75 | 0.767 | 0.617 | 1.000 | 0.342 | `20261011-045408-answers-qwen3.5-4b.json` |
+| sentences | 0.5 | 0.900 | 0.817 | 0.917 | 0.049 | `20261011-050525-answers-dev-windows.json` |
+| sentences | 0.75 | 0.900 | 0.817 | 1.000 | 0.098 | `20261011-050525-answers-dev-windows.json` |
+
 ### Entailment threshold (development set)
 
 ![Entailment trade-off](entailment-development.svg)
@@ -57,8 +76,10 @@ Cost is $0 for every run: all models run locally.
 | 0.5 | 0.900 | 0.817 | 0.917 | 0.049 |
 | 0.6 | 0.900 | 0.817 | 0.917 | 0.073 |
 | 0.7 | 0.900 | 0.817 | 1.000 | 0.098 |
+| 0.75 | 0.900 | 0.817 | 1.000 | 0.098 |
 | 0.8 | 0.900 | 0.817 | 1.000 | 0.098 |
 | 0.9 | 0.867 | 0.783 | 1.000 | 0.122 |
+| 0.95 | 0.800 | 0.700 | 1.000 | 0.195 |
 
 ### Entailment threshold (held-out set)
 
@@ -75,8 +96,10 @@ Cost is $0 for every run: all models run locally.
 | 0.5 | 0.833 | 0.833 | 0.900 | 0.035 |
 | 0.6 | 0.833 | 0.833 | 0.900 | 0.035 |
 | 0.7 | 0.833 | 0.833 | 0.900 | 0.035 |
+| 0.75 | 0.833 | 0.833 | 0.900 | 0.035 |
 | 0.8 | 0.833 | 0.833 | 0.900 | 0.035 |
 | 0.9 | 0.833 | 0.833 | 0.900 | 0.035 |
+| 0.95 | 0.800 | 0.800 | 0.900 | 0.069 |
 
 ### Prompt injection
 

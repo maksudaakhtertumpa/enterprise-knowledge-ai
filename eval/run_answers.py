@@ -57,7 +57,7 @@ DATASET = ROOT / "eval" / "datasets" / "teratai"
 INJECTION = ROOT / "eval" / "datasets" / "injection"
 QUESTION_CATEGORIES = ("paraphrase", "malay", "unanswerable")
 GATE_THRESHOLDS = (0.0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.5)
-ENTAILMENT_THRESHOLDS = (0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+ENTAILMENT_THRESHOLDS = (0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 0.95)
 
 
 # ------------------------------------------------------------------- scoring
@@ -200,29 +200,29 @@ def apply_entailment(row: dict[str, Any], threshold: float) -> tuple[bool, str |
     return (True, " ".join(kept)) if kept else (False, None)
 
 
+def entailment_at(rows: list[dict[str, Any]], t: float) -> dict[str, Any]:
+    """Answer rate, fact recall, refusals and sentences removed at one NLI threshold."""
+    answerable = [r for r in rows if r["category"] != "unanswerable"]
+    unanswerable = [r for r in rows if r["category"] == "unanswerable"]
+    sentences = [c for r in rows for c in (r.get("entailment") or [])]
+    outcomes = {id(r): apply_entailment(r, t) for r in rows}
+    recall = [fact_recall(outcomes[id(r)][1], r.get("facts") or []) for r in answerable]
+    return {
+        "threshold": t,
+        "answer_rate": _ratio(sum(outcomes[id(r)][0] for r in answerable), len(answerable)),
+        "fact_recall": metrics.mean(recall) if recall else None,
+        "correct_refusal_rate": _ratio(
+            sum(not outcomes[id(r)][0] for r in unanswerable), len(unanswerable)
+        ),
+        "sentences_removed": _ratio(sum(c["score"] < t for c in sentences), len(sentences)),
+    }
+
+
 def entailment_table(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """What removing sentences below each NLI threshold would do, from one flag-mode run."""
     if not any(r.get("entailment") for r in rows):
         return []
-    answerable = [r for r in rows if r["category"] != "unanswerable"]
-    unanswerable = [r for r in rows if r["category"] == "unanswerable"]
-    sentences = [c for r in rows for c in (r.get("entailment") or [])]
-    table = []
-    for t in ENTAILMENT_THRESHOLDS:
-        outcomes = {id(r): apply_entailment(r, t) for r in rows}
-        recall = [fact_recall(outcomes[id(r)][1], r.get("facts") or []) for r in answerable]
-        table.append(
-            {
-                "threshold": t,
-                "answer_rate": _ratio(sum(outcomes[id(r)][0] for r in answerable), len(answerable)),
-                "fact_recall": metrics.mean(recall) if recall else None,
-                "correct_refusal_rate": _ratio(
-                    sum(not outcomes[id(r)][0] for r in unanswerable), len(unanswerable)
-                ),
-                "sentences_removed": _ratio(sum(c["score"] < t for c in sentences), len(sentences)),
-            }
-        )
-    return table
+    return [entailment_at(rows, t) for t in ENTAILMENT_THRESHOLDS]
 
 
 def _ratio(num: float, den: float) -> float | None:

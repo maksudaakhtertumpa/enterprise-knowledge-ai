@@ -153,7 +153,9 @@ class Settings(BaseSettings):
     # remove = drop sentences below the threshold; flag = keep them but mark them;
     # off = don't run the check.
     answer_entailment_mode: Literal["remove", "flag", "off"] = "remove"
-    answer_entailment_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    # Chosen on the development set (Phase 7): every threshold from 0.69 to 0.82 gave the
+    # same result there, so the middle of that range; confirmed once on the held-out set.
+    answer_entailment_threshold: float = Field(default=0.75, ge=0.0, le=1.0)
 
     @field_validator("ollama_url")
     @classmethod

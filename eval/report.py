@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from eval import charts
+from eval.run_answers import entailment_at, entailment_table
 from eval.run_retrieval import DEFAULT_OUT, ROOT
 
 DEFAULT_REPORT = ROOT / "docs" / "evaluation"
@@ -82,6 +83,17 @@ def pick(runs: list[dict[str, Any]], k: str, dataset: str) -> dict[str, Any] | N
         return (size, r["timestamp"])
 
     return max(candidates, key=completeness)
+
+
+def _ent_table(r: dict[str, Any]) -> list[dict[str, Any]]:
+    """Recomputed from the per-sentence scores when present, so thresholds stay current."""
+    if any(row.get("entailment") for row in r.get("rows", [])):
+        return entailment_table(r["rows"])
+    return r.get("entailment_table") or []
+
+
+def _granularity(r: dict[str, Any]) -> str:
+    return (r.get("entailment") or {}).get("granularity", "passage")
 
 
 # ------------------------------------------------------------------ helpers
@@ -256,10 +268,54 @@ def build(runs: list[dict[str, Any]], threshold: float | None) -> tuple[str, dic
             "Cost is $0 for every run: all models run locally.",
             "",
         ]
+        checked = {
+            d: r for d, r in ans.items() if r and any(x.get("entailment") for x in r["rows"])
+        }
+        if checked and threshold is not None:
+            lines += [
+                f"### With the entailment check (threshold {threshold:g})",
+                "",
+                "The table above is the model alone. This is what the shipped configuration",
+                "returns: sentences below the threshold removed, empty answers refused.",
+                "",
+                "| Dataset | Answer rate | Fact recall | Correct refusals | Sentences removed |",
+                "|---|---|---|---|---|",
+            ]
+            for d, r in checked.items():
+                t = entailment_at(r["rows"], threshold)
+                lines.append(
+                    f"| {_label(d)} | {_pct(t['answer_rate'])} | {_pct(t['fact_recall'])} | "
+                    f"{_pct(t['correct_refusal_rate'])} | {_pct(t['sentences_removed'])} |"
+                )
+            lines.append("")
+        variants = {}
+        for r in sorted(
+            (x for x in runs if x["_kind"] == "answers" and x["dataset"] == "teratai"),
+            key=lambda x: x["timestamp"],
+        ):
+            if any(row.get("entailment") for row in r["rows"]):
+                variants[_granularity(r)] = r  # newest per premise granularity
+        if len(variants) > 1 and threshold is not None:
+            lines += [
+                "### Ablation: what the NLI model reads as the premise (development set)",
+                "",
+                "| Premise | Threshold | Answer rate | Fact recall | Correct refusals "
+                "| Sentences removed | Run |",
+                "|---|---|---|---|---|---|---|",
+            ]
+            for g, r in variants.items():
+                for t_value in sorted({0.5, threshold}):
+                    t = entailment_at(r["rows"], t_value)
+                    lines.append(
+                        f"| {g} | {t_value:g} | {_pct(t['answer_rate'])} | "
+                        f"{_pct(t['fact_recall'])} | {_pct(t['correct_refusal_rate'])} | "
+                        f"{_pct(t['sentences_removed'])} | `{r['_file']}` |"
+                    )
+            lines.append("")
         for d, r in ans.items():
-            if not r or not r.get("entailment_table"):
+            table = _ent_table(r) if r else []
+            if not table:
                 continue
-            table = r["entailment_table"]
             name = f"entailment-{_label(d)}.svg"
             svgs[name] = charts.line_chart(
                 f"Entailment threshold trade-off ({_label(d)} set)",

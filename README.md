@@ -1,16 +1,75 @@
-# Enterprise Knowledge AI — Hybrid Search RAG Platform
+# Enterprise Knowledge AI
 
-![CI](https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai/actions/workflows/ci.yml/badge.svg)
+Ask questions about your company's documents and get answers that cite the exact sentence they came from. Every citation is checked against the source, every claim is checked for whether the source supports it, and when the documents don't say, it refuses instead of guessing.
 
-Upload company documents through a web UI or the API, search them with two-stage retrieval (dense embeddings + cross-encoder reranking, with BM25 and RRF hybrid available), and get answers grounded in the documents with **verified** source citations — or an explicit "insufficient evidence" response.
+<p align="center">
+  <img src="docs/screenshots/ask.jpg" alt="An answer with a verified citation: the quoted words are highlighted inside the passage the model was shown" width="820">
+</p>
 
-**Runs entirely on a laptop for $0:** open-source models (Qwen3-Embedding, bge-reranker, `qwen3.5:4b` via Ollama), a FastAPI backend and a Next.js + Tailwind CSS + shadcn/ui web app. No paid APIs, no cloud account needed.
+[![CI](https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/maksudaakhtertumpa/enterprise-knowledge-ai/actions/workflows/ci.yml) ![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square) ![Cost: $0](https://img.shields.io/badge/cost-%240%20%C2%B7%20runs%20locally-2EA44F?style=flat-square)  
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white) ![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat-square&logo=pydantic&logoColor=white) ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-D71F00?style=flat-square&logo=sqlalchemy&logoColor=white) ![SQLite FTS5](https://img.shields.io/badge/SQLite%20FTS5-003B57?style=flat-square&logo=sqlite&logoColor=white) ![ChromaDB](https://img.shields.io/badge/ChromaDB-FF6446?style=flat-square)  
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white) ![Hugging Face](https://img.shields.io/badge/Hugging%20Face-FFD21E?style=flat-square&logo=huggingface&logoColor=black) ![Ollama](https://img.shields.io/badge/Ollama-000000?style=flat-square&logo=ollama&logoColor=white) ![Apple silicon](https://img.shields.io/badge/Apple%20silicon%20(MPS)-000000?style=flat-square&logo=apple&logoColor=white)  
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat-square&logo=nextdotjs&logoColor=white) ![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) ![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000000?style=flat-square&logo=shadcnui&logoColor=white) ![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat-square&logo=playwright&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
+
+| Keyword vs semantic vs hybrid search | Phone, dark mode, a question in Malay |
+|---|---|
+| <img src="docs/screenshots/search.jpg" alt="Three retrievers side by side for a Malay query: BM25 finds nothing, dense and hybrid find the lost-device policy" width="560"> | <img src="docs/screenshots/ask-mobile-dark.jpg" alt="A Malay question answered with a citation on a phone in dark mode" width="200"> |
+
+**Runs on a laptop for $0:** open-weight models on the Apple GPU (Qwen3-Embedding, bge-reranker-v2-m3, mDeBERTa NLI) and `qwen3.5:4b` through Ollama. No paid APIs, no cloud account. Screenshots are real output on a MacBook Air M4 (`./scripts/screenshots.sh` retakes them).
 
 > **Status: Phase 7 of 8 complete** (measured on a MacBook Air M4, $0). Grounded answers from a local LLM: every citation is checked against the retrieved text, and every sentence is checked by a local NLI model for whether its sources actually support it. On **held-out** questions never used for tuning: retrieval MRR 1.000 (38 queries); 25 of 30 answerable questions answered, each with all its expected facts and citations to the right sections (the other 5 refused); 9 of 10 unanswerable questions refused; about 5 s per answer. Rate limits, security headers, a dependency audit and a [threat model](docs/SECURITY.md) cover the hardening. Full numbers and charts: [evaluation report](docs/evaluation/README.md). Nothing is described as working until it is.
 
-## Architecture
+## Features
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full diagram, design decisions and milestone plan.
+- **Verified citations.** The model must quote the passage it cites; each quote is checked word for word against the text it was shown, and the UI highlights it inside that passage and the surrounding document.
+- **Entailment check.** A local multilingual NLI model scores whether each sentence actually follows from what it cites, and removes the ones that don't. This catches a real quote attached to a wrong claim.
+- **Honest refusals.** If nothing verifiable is left, the answer is "not enough evidence", with the reason.
+- **Two-stage retrieval.** Dense search plus a cross-encoder reranker by default; BM25 (SQLite FTS5) and RRF hybrid on request, comparable side by side. Malay questions find English documents.
+- **Documents:** PDF, DOCX and TXT upload with type checks, zip-bomb and size guards, duplicate detection, page-aware chunking and live processing status.
+- **Workspaces** with hashed API keys; each workspace has its own keyword and vector indexes, so one can never see another's documents.
+- **Web UI** (Next.js, Tailwind CSS, shadcn/ui): chat with citation chips, "how this answer was checked", search comparison, history, analytics, dark mode, phone layout. The API key never reaches the browser.
+- **Measured, not claimed:** retrieval and answer benchmarks on a development set and a held-out set, with an [evaluation report and charts](docs/evaluation/README.md).
+- **Hardening:** rate limits, security headers, prompt-injection defences tested with planted documents, dependency audit in CI, [threat model](docs/SECURITY.md).
+
+## How it works
+
+```mermaid
+graph LR
+  q([question]) --> auth[API key to workspace]
+  auth --> dense[dense search<br/>Qwen3-Embedding]
+  dense --> rerank[rerank top 10<br/>bge-reranker-v2-m3]
+  rerank --> llm[local LLM<br/>qwen3.5:4b via Ollama]
+  llm -->|declines| refuse([not enough evidence])
+  llm --> verify[verify citations<br/>quote must be in the passage]
+  verify --> nli[entailment check<br/>mDeBERTa NLI]
+  verify -->|nothing verified| refuse
+  nli -->|nothing supported| refuse
+  nli --> answer([answer with verified citations])
+```
+
+| Step | What it does |
+|---|---|
+| Workspace | The API key resolves to one workspace; every query below is scoped to it. |
+| Retrieve | Dense search in that workspace's Chroma collection (BM25 and RRF hybrid on request). |
+| Rerank | A cross-encoder rescores the top 10 and the best 5 go to the model, within its context window. |
+| Generate | The local LLM sees the passages as fenced, untrusted data and must answer in JSON with `[n]` markers and an exact quote per citation. |
+| Verify | Each quote must appear in the passage it cites (numbers and negations exactly). Sentences without a verified citation are dropped. |
+| Entailment | Each remaining sentence is scored against its cited passage and that passage's 1–3-sentence windows; below 0.75 it is removed. |
+
+More detail: [architecture](docs/ARCHITECTURE.md) · [security](docs/SECURITY.md) · [evaluation](docs/evaluation/README.md) · phase notes in [docs/phases/](docs/phases/).
+
+<details>
+<summary><b>More screenshots</b></summary>
+
+| How an answer was checked | A question the documents can't answer |
+|---|---|
+| <img src="docs/screenshots/checks.jpg" alt="Citations verified, sentences kept and the entailment score for each sentence" width="420"> | <img src="docs/screenshots/refusal.jpg" alt="Not enough evidence to answer, with the reason" width="420"> |
+
+| Documents | Analytics |
+|---|---|
+| <img src="docs/screenshots/documents.jpg" alt="Eleven policy documents, all ready, with chunk counts and sizes" width="420"> | <img src="docs/screenshots/analytics.jpg" alt="Questions, answer rate, latency, citations verified and cost $0.00" width="420"> |
+
+</details>
 
 ## Quick start
 
@@ -84,6 +143,7 @@ curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
 | Held-out benchmarks (don't tune on these) | `make heldout` |
 | Evaluation report with charts | `python -m eval.report` → [docs/evaluation/](docs/evaluation/README.md) |
 | Dependency vulnerability scan | `make audit` (pip-audit + npm audit) |
+| Retake the README screenshots | `./scripts/screenshots.sh` (real models; own ports and temporary data) |
 | New workspace + key | `python -m app.cli create-workspace "Name"` |
 | Re-embed after changing model | `python -m app.cli reindex` (API stopped) |
 | List / revoke keys | `python -m app.cli list-workspaces` · `python -m app.cli revoke-key eka_XXXXXXXX` |
