@@ -9,6 +9,7 @@
     local LLM (Ollama)
       │
       ▼  every citation checked against the passages it was given
+      ▼  every sentence checked for entailment by its cited passages (NLI)
     verified answer  ──(nothing survives)──► "insufficient evidence"
 
 The response never contains a source the system didn't retrieve: citation
@@ -25,6 +26,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.db.models import AnswerStatus, Chunk, Document
+from app.services.generation.entailment import EntailmentChecker, score_claims, strip_markers
 from app.services.generation.llm import LLMClient
 from app.services.generation.prompt import (
     SYSTEM_PROMPT,
@@ -33,8 +35,10 @@ from app.services.generation.prompt import (
     looks_like_injection,
 )
 from app.services.generation.verify import (
+    KeptSentence,
     ModelOutputError,
     VerificationResult,
+    keep_only,
     parse_model_output,
     verify,
 )
@@ -52,6 +56,30 @@ class Reason:
     MODEL_DECLINED = "model_declined"
     NO_VERIFIED_CITATIONS = "no_verified_citations"
     INVALID_OUTPUT = "model_output_invalid"
+    NOT_ENTAILED = "claims_not_supported"
+
+
+@dataclass(slots=True)
+class SentenceCheck:
+    text: str  # as the model wrote it, with markers
+    score: float  # P(entailment | cited passages)
+    supported: bool
+
+
+@dataclass(slots=True)
+class EntailmentResult:
+    model: str
+    mode: str  # "remove" | "flag"
+    threshold: float
+    sentences: list[SentenceCheck]
+
+    @property
+    def removed(self) -> int:
+        return sum(not s.supported for s in self.sentences) if self.mode == "remove" else 0
+
+    @property
+    def flagged(self) -> int:
+        return sum(not s.supported for s in self.sentences)
 
 
 @dataclass(slots=True)
@@ -76,6 +104,7 @@ class AnswerOutcome:
     warnings: list[str] = field(default_factory=list)
     embedding_model: str | None = None
     reranker_model: str | None = None
+    entailment: EntailmentResult | None = None
 
 
 class AnswerService:
@@ -86,12 +115,14 @@ class AnswerService:
         search: SearchService,
         llm: LLMClient,
         count_tokens,
+        entailment: EntailmentChecker | None = None,
     ) -> None:
         self.db = db
         self.settings = settings
         self.search = search
         self.llm = llm
         self.count_tokens = count_tokens
+        self.entailment = entailment
 
     def answer(
         self,
@@ -186,6 +217,30 @@ class AnswerService:
                 **base,
                 **usage,
             )
+        # ---- 5. entailment: does each sentence follow from what it cites? ----------
+        entailment = None
+        if self.entailment is not None and s.answer_entailment_mode != "off":
+            t_ent = time.perf_counter()
+            texts = {p.number: p.text for p in prompt_passages}
+            checked, entailment = self._check_entailment(checked, texts)
+            timings["entailment_ms"] = _ms(t_ent)
+            if entailment.flagged and entailment.mode == "flag":
+                warnings.append(
+                    f"{entailment.flagged} sentence(s) may not follow from their sources "
+                    "(entailment check)"
+                )
+            if not checked.supported:
+                return self._insufficient(
+                    Reason.NOT_ENTAILED,
+                    t0,
+                    timings,
+                    checked,
+                    proposed=proposed,
+                    entailment=entailment,
+                    **base,
+                    **usage,
+                )
+
         timings["total_ms"] = _ms(t0)
         return AnswerOutcome(
             status=AnswerStatus.ANSWERED,
@@ -194,9 +249,46 @@ class AnswerService:
             verification=checked,
             citations_proposed=proposed,
             timings_ms=timings,
+            entailment=entailment,
             **base,
             **usage,
         )
+
+    def _check_entailment(
+        self, checked: VerificationResult, passages: dict[int, str]
+    ) -> tuple[VerificationResult, EntailmentResult]:
+        """Score every kept sentence against the passages it cites; drop or flag weak ones."""
+        s = self.settings
+        assert self.entailment is not None
+        claims = [
+            ([passages[n] for n in sentence.passages], strip_markers(sentence.text))
+            for sentence in checked.sentences
+        ]
+        scores = score_claims(
+            self.entailment,
+            claims,
+            granularity=s.entailment_granularity,
+            window=s.entailment_window_sentences,
+        )
+        threshold = s.answer_entailment_threshold
+        results = [
+            SentenceCheck(sentence.text, round(score, 4), score >= threshold)
+            for sentence, score in zip(checked.sentences, scores, strict=True)
+        ]
+        result = EntailmentResult(
+            model=self.entailment.model_name,
+            mode=s.answer_entailment_mode,
+            threshold=threshold,
+            sentences=results,
+        )
+        if s.answer_entailment_mode == "remove":
+            kept: list[KeptSentence] = [
+                sentence
+                for sentence, r in zip(checked.sentences, results, strict=True)
+                if r.supported
+            ]
+            checked = keep_only(checked, kept)
+        return checked, result
 
     # ------------------------------------------------------------------ helpers
     def _fit_budget(

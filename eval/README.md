@@ -79,6 +79,12 @@ Measured with `./scripts/verify.sh` (`python -m eval.run_retrieval`). Default se
 
 No setting matched the better single retriever in every category: each one bought lexical precision with paraphrase quality. Candidate depth made no difference at the best weight. Consequences: **dense is the default mode**, hybrid keeps the best setting (k=10, w=0.25, depth 20), and Phase 4 adds a cross-encoder reranker. Settings were chosen on the scored queries, so held-out confirmation comes in Phase 7.
 
+### Held-out set (Phase 7)
+
+`datasets/teratai-heldout/` holds 48 new questions over the same documents (8 keyword, 24 paraphrase, 6 Malay, 10 unanswerable), written before any held-out run and never used to choose a setting. `python -m eval.run_retrieval --dataset eval/datasets/teratai-heldout` and `python -m eval.run_answers --dataset eval/datasets/teratai-heldout --no-injection` run it (`make heldout`). On the M4, dense + rerank stayed the best mode (MRR 1.000 on 38 scored queries). These questions turned out easier for BM25 than the development ones (MRR 0.794 vs 0.538), a sign of single-author bias, so the set confirms the ranking of methods more than the absolute numbers.
+
+`python -m eval.report` turns the saved runs into [docs/evaluation/README.md](../docs/evaluation/README.md) with SVG charts.
+
 ### Reranking, same machine (Phase 4)
 
 `BAAI/bge-reranker-v2-m3` on MPS (float16), applied after first-stage retrieval. Hybrid uses the swept setting (k=10, BM25 weight 0.25).

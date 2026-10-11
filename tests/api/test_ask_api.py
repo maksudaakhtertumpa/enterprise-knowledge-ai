@@ -218,8 +218,57 @@ def test_only_supported_sentences_survive(client, auth, corpus, use_llm):
     assert body["verification"]["sentences_removed"] == 2
 
 
-def test_sources_and_pages_come_from_the_database_not_the_model(client, auth, corpus, use_llm):
+def _fake_page_reply(passages):
+    n = (
+        passage_with(passages, "Claims are").number
+        if any("Claims are" in p.text for p in passages)
+        else passage_with(passages, "claims").number
+    )
+    return {
+        "answer": f"Claims are paid within 30 days, see page 99 of secret.pdf [{n}].",
+        "insufficient_evidence": False,
+        "citations": [{"passage": n, "quote": "reimbursed within 30 days"}],
+    }
+
+
+def test_entailment_check_drops_a_sentence_its_genuine_quote_does_not_support(
+    client, auth, corpus, use_llm
+):
+    """The quote is real, but '99' and 'secret.pdf' appear nowhere in the passage."""
+    use_llm(_fake_page_reply)
+    body = ask(client, auth, "When are travel claims paid?").json()
+    assert body["status"] == "insufficient_evidence"
+    assert body["reason"] == "claims_not_supported"
+    ent = body["verification"]["entailment"]
+    assert ent["mode"] == "remove" and ent["sentences_removed"] == 1
+    assert ent["sentences"][0]["supported"] is False and ent["sentences"][0]["score"] == 0.0
+    assert body["citations"] == []
+
+
+def test_entailment_flag_mode_keeps_the_sentence_with_a_warning(
+    client, auth, corpus, use_llm, settings
+):
+    settings.answer_entailment_mode = "flag"
+    use_llm(_fake_page_reply)
+    body = ask(client, auth, "When are travel claims paid?").json()
+    assert body["status"] == "answered"
+    assert body["verification"]["entailment"]["sentences_flagged"] == 1
+    assert any("entailment check" in w for w in body["warnings"])
+
+
+def test_supported_sentences_pass_the_entailment_check(client, auth, corpus):
+    body = ask(client, auth, "How many working days of annual leave do staff receive?").json()
+    ent = body["verification"]["entailment"]
+    assert body["status"] == "answered"
+    assert ent["model"] == "lexical-v1" and ent["sentences_removed"] == 0
+    assert all(s["supported"] and s["score"] >= ent["threshold"] for s in ent["sentences"])
+
+
+def test_sources_and_pages_come_from_the_database_not_the_model(
+    client, auth, corpus, use_llm, settings
+):
     """Whatever the model claims about sources is ignored; only passage numbers matter."""
+    settings.answer_entailment_mode = "off"  # isolate citation metadata from the claim check
 
     def reply(passages):
         n = (

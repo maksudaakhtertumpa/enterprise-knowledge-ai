@@ -6,8 +6,8 @@
 #
 # Both finish with the web UI checks (needs Node.js). Browser tests: `make e2e`.
 #
-# The first full run downloads the embedding model (~1.2 GB) and the reranker (~2.3 GB)
-# into ~/.cache/huggingface, in the "Prepare models" step, with progress bars.
+# The first full run downloads the embedding model (~1.2 GB), the reranker (~2.3 GB) and
+# the entailment model (~1.1 GB) into ~/.cache/huggingface, in the "Prepare models" step.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -42,7 +42,7 @@ if [[ $QUICK -eq 1 ]]; then
   step "Benchmark (BM25 only — hashing is not semantic)"
   python -m eval.run_retrieval --backend hashing --modes bm25 --label quick-bm25
 else
-  step "Prepare models (first run downloads ~3.5 GB; also checks Ollama)"
+  step "Prepare models (first run downloads ~4.6 GB; also checks Ollama)"
   python -m app.cli prepare-models
   step "Live smoke test (real embedding model)"
   python scripts/smoke_test.py --backend sentence-transformers
@@ -50,6 +50,11 @@ else
   python -m eval.run_retrieval
   step "Answer benchmark (local LLM; several minutes)"
   python -m eval.run_answers
+  step "Held-out benchmarks (questions never used for tuning)"
+  python -m eval.run_retrieval --dataset eval/datasets/teratai-heldout
+  python -m eval.run_answers --dataset eval/datasets/teratai-heldout --no-injection
+  step "Evaluation report (docs/evaluation/)"
+  python -m eval.report
 fi
 
 step "Web UI: format, lint, types, unit tests, production build"

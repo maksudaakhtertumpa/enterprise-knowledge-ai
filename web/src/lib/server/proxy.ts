@@ -81,7 +81,7 @@ export async function forward(
   }
   // Pass back only what the UI needs; never upstream cookies or server headers.
   const out = new Headers();
-  for (const name of ["content-type", "x-request-id"]) {
+  for (const name of ["content-type", "x-request-id", "retry-after"]) {
     const value = upstream.headers.get(name);
     if (value) out.set(name, value);
   }

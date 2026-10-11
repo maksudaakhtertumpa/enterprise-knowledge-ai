@@ -73,12 +73,19 @@ class RejectedCitation:
 
 
 @dataclass(slots=True)
+class KeptSentence:
+    text: str  # with its [n] markers
+    passages: tuple[int, ...]  # verified passages it cites
+
+
+@dataclass(slots=True)
 class VerificationResult:
     answer: str  # only verified sentences, with markers renumbered-free (original numbers)
     citations: list[VerifiedCitation]
     rejected: list[RejectedCitation] = field(default_factory=list)
     sentences_total: int = 0
     sentences_removed: int = 0
+    sentences: list[KeptSentence] = field(default_factory=list)
 
     @property
     def supported(self) -> bool:
@@ -219,7 +226,7 @@ def verify(model: ModelAnswer, passages: dict[int, str]) -> VerificationResult:
             verified[c.passage] = VerifiedCitation(c.passage, c.quote, kind, offset)
 
     sentences = split_sentences(model.answer) if not model.insufficient_evidence else []
-    kept: list[str] = []
+    kept: list[KeptSentence] = []
     for sentence in sentences:
         markers = {int(n) for n in _MARKER.findall(sentence)}
         good = markers & verified.keys()
@@ -227,13 +234,32 @@ def verify(model: ModelAnswer, passages: dict[int, str]) -> VerificationResult:
             continue  # no verified support: never present it as fact
         # Drop markers that point to unverified passages; keep the sentence.
         cleaned = _MARKER.sub(_keep_markers(good), sentence)
-        kept.append(re.sub(r"\s+([.!?,;:])", r"\1", re.sub(r"[ \t]{2,}", " ", cleaned)).strip())
+        text = re.sub(r"\s+([.!?,;:])", r"\1", re.sub(r"[ \t]{2,}", " ", cleaned)).strip()
+        kept.append(KeptSentence(text, tuple(sorted(good))))
 
-    used = {int(n) for s in kept for n in _MARKER.findall(s)}
-    return VerificationResult(
-        answer=" ".join(kept),
-        citations=[verified[n] for n in sorted(used)],
+    result = VerificationResult(
+        answer="",
+        citations=[],
         rejected=rejected,
         sentences_total=len(sentences),
         sentences_removed=len(sentences) - len(kept),
+    )
+    return keep_only(result, kept, verified)
+
+
+def keep_only(
+    result: VerificationResult,
+    sentences: list[KeptSentence],
+    verified: dict[int, VerifiedCitation] | None = None,
+) -> VerificationResult:
+    """The result restricted to `sentences`; citations follow the markers still used."""
+    by_passage = verified if verified is not None else {c.passage: c for c in result.citations}
+    used = {n for s in sentences for n in s.passages}
+    return VerificationResult(
+        answer=" ".join(s.text for s in sentences),
+        citations=[by_passage[n] for n in sorted(used)],
+        rejected=result.rejected,
+        sentences_total=result.sentences_total,
+        sentences_removed=result.sentences_removed,
+        sentences=sentences,
     )

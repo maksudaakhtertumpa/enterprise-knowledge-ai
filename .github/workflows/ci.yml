@@ -110,6 +110,29 @@ jobs:
           path: web/playwright-report
           retention-days: 7
 
+  # Known vulnerabilities in every pinned Python package (PyPI advisory database).
+  # Accepted findings are listed with their reason in docs/SECURITY.md; anything
+  # new fails the build.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install pip-audit==2.10.1
+      - name: pip-audit (requirements-ml.lock = app + dev + ml)
+        run: |
+          # ChromaDB server/RBAC advisories with no fixed release. This project runs
+          # Chroma embedded (PersistentClient, embedding_function=None) and never
+          # starts its HTTP server, so the vulnerable endpoints don't exist here.
+          pip-audit --strict --no-deps --disable-pip -r requirements-ml.lock \
+            --ignore-vuln PYSEC-2026-311 \
+            --ignore-vuln PYSEC-2026-3813 \
+            --ignore-vuln PYSEC-2026-3814 \
+            --ignore-vuln PYSEC-2026-3815
+
   # Real sentence-transformers code path with a tiny model built on the fly
   # (no download). Apple-silicon runner, matching the development machine.
   ml:

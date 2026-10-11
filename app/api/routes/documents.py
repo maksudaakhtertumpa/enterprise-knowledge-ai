@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError, ConflictError, NotFoundError
-from app.core.security import WorkspaceContext, get_workspace
+from app.core.security import WorkspaceContext, get_workspace, rate_limited
 from app.db.models import Document, DocumentStatus
 from app.db.session import get_db
 from app.repositories.documents import DocumentRepository
@@ -45,6 +45,7 @@ router = APIRouter(
 )
 
 Workspace = Annotated[WorkspaceContext, Depends(get_workspace)]
+IngestWorkspace = Annotated[WorkspaceContext, Depends(rate_limited("ingest"))]
 DB = Annotated[Session, Depends(get_db)]
 AppSettings = Annotated[Settings, Depends(get_settings)]
 
@@ -81,12 +82,13 @@ def _get_or_404(repo: DocumentRepository, workspace_id: str, document_id: uuid.U
         409: {"model": ErrorResponse, "description": "Identical file already in this workspace"},
         413: {"model": ErrorResponse, "description": "File exceeds the upload limit"},
         415: {"model": ErrorResponse, "description": "Unsupported or mismatched file type"},
+        429: {"model": ErrorResponse, "description": "Rate limit reached; see Retry-After"},
     },
 )
 def upload_document(
     request: Request,
     background: BackgroundTasks,
-    workspace: Workspace,
+    workspace: IngestWorkspace,
     db: DB,
     settings: AppSettings,
     file: UploadFile = File(..., description="PDF, DOCX or TXT"),
@@ -223,13 +225,17 @@ def list_chunks(
     status_code=status.HTTP_202_ACCEPTED,
     response_model=DocumentOut,
     summary="Re-run ingestion (e.g. after changing chunk settings)",
-    responses={404: {"model": ErrorResponse}, 409: {"model": ErrorResponse}},
+    responses={
+        404: {"model": ErrorResponse},
+        409: {"model": ErrorResponse},
+        429: {"model": ErrorResponse, "description": "Rate limit reached; see Retry-After"},
+    },
 )
 def reprocess_document(
     document_id: uuid.UUID,
     request: Request,
     background: BackgroundTasks,
-    workspace: Workspace,
+    workspace: IngestWorkspace,
     db: DB,
     settings: AppSettings,
 ) -> Document:

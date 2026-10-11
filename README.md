@@ -6,7 +6,7 @@ Upload company documents through a web UI or the API, search them with two-stage
 
 **Runs entirely on a laptop for $0:** open-source models (Qwen3-Embedding, bge-reranker, `qwen3.5:4b` via Ollama), a FastAPI backend and a Next.js + Tailwind CSS + shadcn/ui web app. No paid APIs, no cloud account needed.
 
-> **Status: Phase 6 of 8 complete** (Next.js web UI with verified citations, checked on a MacBook Air M4). Grounded answers from a local LLM, with every citation checked against the retrieved text, measured on a MacBook Air M4: 29 of 30 questions answered with verified citations, 11 of 12 unanswerable questions refused, 4 of 4 prompt-injection attacks resisted, about 5 s per answer, $0. See the [roadmap](#roadmap). Nothing is described as working until it is.
+> **Status: Phase 7 of 8 complete** (measured on a MacBook Air M4, $0). Grounded answers from a local LLM: every citation is checked against the retrieved text, and every sentence is checked by a local NLI model for whether its sources actually support it. On **held-out** questions never used for tuning: retrieval MRR 1.000 (38 queries); 25 of 30 answerable questions answered, each with all its expected facts and citations to the right sections (the other 5 refused); 9 of 10 unanswerable questions refused; about 5 s per answer. Rate limits, security headers, a dependency audit and a [threat model](docs/SECURITY.md) cover the hardening. Full numbers and charts: [evaluation report](docs/evaluation/README.md). Nothing is described as working until it is.
 
 ## Architecture
 
@@ -68,7 +68,7 @@ curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
 
 | Task | Command |
 |---|---|
-| Run API (reload) | `uvicorn app.main:app --reload` |
+| Run API (reload) | `uvicorn app.main:app --reload --no-server-header` |
 | Run web UI (API running) | `make web` (`cd web && npx next dev --port 3000`) |
 | API + UI together | `./scripts/dev.sh` (`--offline` for no models / no Ollama) |
 | Web UI checks | `make web-check` (Prettier, ESLint, TypeScript, Vitest, build) |
@@ -81,6 +81,9 @@ curl -H "X-API-Key: $EKA_KEY" -H "Content-Type: application/json" \
 | Retrieval benchmark | `python -m eval.run_retrieval` |
 | Fusion settings sweep | `python -m eval.sweep_fusion` |
 | Answer benchmark (needs Ollama) | `python -m eval.run_answers` |
+| Held-out benchmarks (don't tune on these) | `make heldout` |
+| Evaluation report with charts | `python -m eval.report` → [docs/evaluation/](docs/evaluation/README.md) |
+| Dependency vulnerability scan | `make audit` (pip-audit + npm audit) |
 | New workspace + key | `python -m app.cli create-workspace "Name"` |
 | Re-embed after changing model | `python -m app.cli reindex` (API stopped) |
 | List / revoke keys | `python -m app.cli list-workspaces` · `python -m app.cli revoke-key eka_XXXXXXXX` |
@@ -112,7 +115,9 @@ All errors share one shape:
 ```json
 {"error": {"code": "not_found", "message": "...", "details": null, "request_id": "..."}}
 ```
-Every response carries an `X-Request-ID` header matching the `request_id` in logs.
+Every response carries an `X-Request-ID` header matching the `request_id` in logs, plus security headers (`nosniff`, `DENY` framing, `no-store`, `CSP default-src 'none'`).
+
+**Rate limits** (per workspace, in memory): `ask` 20/min (burst 5), `search` 60/min (burst 20), uploads and reprocessing 60/min (burst 30). Repeated bad keys from one address get a pause too. Over the limit: `429` with code `rate_limited` and a `Retry-After` header. All configurable (`EKA_RATE_LIMIT_*`); see [SECURITY.md](docs/SECURITY.md).
 
 ### Ingestion at a glance
 - **Validation:** size limit enforced before buffering; content must match the extension (magic bytes, DOCX structure); zip-bomb guard; filenames sanitised and never used as paths.
@@ -135,20 +140,22 @@ Every response carries an `X-Request-ID` header matching the `request_id` in log
   | Hybrid RRF (best of 36 settings) | 0.879 | 0.798 | 0.979 | 36 ms |
   | **Dense + cross-encoder rerank (default)** | **0.962** | **0.925** | **1.000** | 335 ms |
 
-  Fusion could only trade identifier precision for paraphrase quality; the reranker improved both (lexical MRR 1.000, paraphrase 0.955) and handles Malay questions over English documents.
+  Fusion could only trade identifier precision for paraphrase quality; the reranker improved both (lexical MRR 1.000, paraphrase 0.955) and handles Malay questions over English documents. On 38 held-out queries the same default scored MRR 1.000 and stayed the best mode ([report](docs/evaluation/README.md)).
 
 ### Answers at a glance
 - **Local LLM:** `qwen3.5:4b` through Ollama, temperature 0, JSON-only replies, explicit 8K context window. $0 per question.
 - **Citations can't be invented:** the model cites passages by number with a short quote. Each quote is checked word for word against the passage it was shown, and file names, sections and page numbers are attached from the database. A near-exact quote may differ only in filler words, never in numbers or negations.
 - **Unsupported sentences are removed.** If nothing verifiable remains, the answer is `insufficient_evidence` with a reason (no passages, weak retrieval, model declined, nothing verified).
+- **Entailment check:** a local multilingual NLI model (`mDeBERTa-v3`, MIT) scores whether each sentence follows from the passages it cites, using the best of the whole passage and its 1–3-sentence windows. Sentences below 0.75 are removed (or flagged). It catches a true quote attached to a wrong claim, which quote checking can't.
 - **Prompt injection:** document text is fenced with a random value per request, treated as data, flagged when it looks like instructions, and can only influence answers through verified quotes. The residual risk, a model quoting a malicious document from the same workspace, is measured by a planted-attack benchmark ([details](docs/phases/phase-5-grounded-qa.md)).
-- **Measured on a MacBook Air M4** with `qwen3.5:4b` ([details](eval/README.md)):
+- **Measured on a MacBook Air M4** with `qwen3.5:4b`, citation check + entailment check at 0.75 ([report](docs/evaluation/README.md)):
 
-  | Answer rate | Fact recall | Citation precision | Correct refusals | Injection attacks resisted | p50 latency | Cost |
+  | Questions | Answer rate | Fact recall | Correct refusals | Injection attacks resisted | p50 latency | Cost |
   |---|---|---|---|---|---|---|
-  | 0.967 | 0.883 | 0.906 | 0.917 | 4 / 4 | 5.4 s | $0 |
+  | Development (42, used for tuning) | 0.900 | 0.817 | 1.000 | 4 / 4 | 6.8 s | $0 |
+  | **Held-out (40, never tuned on)** | **0.833** | **0.833** | **0.900** | — | 5.3 s | $0 |
 
-  The one wrong answer (a "trick" question) cited a genuine quote but claimed more than it said. Quote verification can't catch that, so an entailment check is on the roadmap.
+  On the held-out set every answer the system gave contained all its expected facts and cited the right sections; misses are refusals. The entailment check removed the Phase 5 wrong answer on the development set, but on the held-out set it removed one correct sentence and missed one wrong answer that was *true but off-question*. Both are explained in the [Phase 7 notes](docs/phases/phase-7-evaluation-security.md).
 
 ### Web UI at a glance
 - **Stack:** Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn/ui on Radix UI; Vitest and Playwright tests.
@@ -172,7 +179,7 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [x] **Phase 4** — Fusion tuning and cross-encoder reranking, defaults chosen from M4 measurements
 - [x] **Phase 5** — Grounded answers (local LLM), citation verification, prompt-injection defences, answer benchmark on Apple silicon
 - [x] **Phase 6** — Web UI (Next.js + Tailwind CSS + shadcn/ui): chat with verified citations, search comparison, document management, history, analytics
-- [ ] **Phase 7** — Evaluation (Recall@k, MRR, faithfulness, latency), security hardening; sentence-level entailment check for answers (local NLI model)
+- [x] **Phase 7** — Sentence-level entailment check (local NLI), held-out evaluation with charts, rate limiting, security headers, dependency audit, threat model
 - [ ] **Phase 8** — Docker Compose, AWS deployment, CI/CD
 
 ## Project docs
@@ -184,6 +191,9 @@ All settings are environment variables prefixed `EKA_`; see [.env.example](.env.
 - [Phase 4 notes](docs/phases/phase-4-reranking.md)
 - [Phase 5 notes](docs/phases/phase-5-grounded-qa.md)
 - [Phase 6 notes](docs/phases/phase-6-web-ui.md)
+- [Phase 7 notes](docs/phases/phase-7-evaluation-security.md)
+- [Evaluation report with charts](docs/evaluation/README.md)
+- [Security notes and threat model](docs/SECURITY.md)
 - [Retrieval evaluation](eval/README.md)
 
 ## License

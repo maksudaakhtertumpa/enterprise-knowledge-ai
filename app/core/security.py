@@ -19,6 +19,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
+from app.core.ratelimit import RateLimits, get_rate_limits
 from app.db.models import ApiKey, Workspace
 from app.db.session import get_db
 
@@ -75,9 +76,15 @@ def get_workspace(
     request: Request,
     api_key: str | None = Depends(_header),
     db: Session = Depends(get_db),
+    limits: RateLimits = Depends(get_rate_limits),
 ) -> WorkspaceContext:
+    # An address that keeps presenting bad keys waits before any key is checked.
+    client = limits.client_address(request)
+    limits.check_auth_allowed(client)
+
     # One generic message for every failure, so callers can't probe which part was wrong.
     if not api_key or not api_key.startswith(KEY_PREFIX) or len(api_key) > 128:
+        limits.record_auth_failure(client)
         raise UnauthorizedError("Missing or invalid API key")
 
     row = db.execute(
@@ -86,8 +93,22 @@ def get_workspace(
         .where(ApiKey.key_hash == hash_api_key(api_key), ApiKey.revoked_at.is_(None))
     ).first()
     if row is None:
+        limits.record_auth_failure(client)
         raise UnauthorizedError("Missing or invalid API key")
 
     ctx = WorkspaceContext(id=row.id, name=row.name)
     request.state.workspace_id = ctx.id  # picked up by the access log
     return ctx
+
+
+def rate_limited(name: str):
+    """Dependency: authenticate, then spend one token from this workspace's `name` bucket."""
+
+    def dependency(
+        workspace: WorkspaceContext = Depends(get_workspace),
+        limits: RateLimits = Depends(get_rate_limits),
+    ) -> WorkspaceContext:
+        limits.check(name, workspace.id)
+        return workspace
+
+    return dependency

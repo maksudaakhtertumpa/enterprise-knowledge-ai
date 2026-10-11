@@ -130,6 +130,10 @@ test("ask: cited answer, source with highlighted quote and document context", as
 
   await answer.getByText("How this answer was checked").click();
   await expect(answer.getByText("Passages the model was shown")).toBeVisible();
+  // Every kept sentence was scored for entailment by its cited passage.
+  const entailment = answer.getByTestId("entailment");
+  await expect(entailment).toContainText("Checked by lexical-v1");
+  await expect(entailment).toContainText("0 removed.");
 });
 
 test("ask: a question the documents can't answer is refused with a reason", async ({ page }) => {

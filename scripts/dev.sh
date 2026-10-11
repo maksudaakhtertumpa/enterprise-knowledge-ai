@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 
 if [[ "${1:-}" == "--offline" ]]; then
   export EKA_EMBEDDING_BACKEND=hashing EKA_RERANKER_BACKEND=hashing EKA_LLM_BACKEND=extractive
+  export EKA_ENTAILMENT_BACKEND=lexical
   export EKA_DATA_DIR="${EKA_DATA_DIR:-./data-offline}"   # keep offline vectors apart
   echo "Offline mode: non-semantic stand-ins, data in $EKA_DATA_DIR"
 fi
@@ -22,7 +23,7 @@ fi
 
 ./scripts/web-setup.sh
 
-python -m uvicorn app.main:app --port 8000 &
+python -m uvicorn app.main:app --port 8000 --no-server-header &
 API_PID=$!
 # Stop everything this script started (the whole process group) on exit or Ctrl+C.
 cleanup() { trap - EXIT INT TERM; kill 0 2>/dev/null || true; }

@@ -42,6 +42,26 @@ class Settings(BaseSettings):
     # handlers), never from the browser, so no browser origin needs access.
     cors_origins: list[str] = Field(default_factory=list)
 
+    # --- Rate limits (token buckets, in process memory; see app/core/ratelimit.py) ---
+    # Per workspace: sustained requests per minute, and how many may arrive at once.
+    rate_limit_enabled: bool = True
+    rate_limit_ask_per_minute: int = Field(default=20, ge=1)
+    rate_limit_ask_burst: int = Field(default=5, ge=1)
+    rate_limit_search_per_minute: int = Field(default=60, ge=1)
+    rate_limit_search_burst: int = Field(default=20, ge=1)
+    rate_limit_ingest_per_minute: int = Field(default=60, ge=1)  # uploads + reprocessing
+    rate_limit_ingest_burst: int = Field(default=30, ge=1)
+    # Per client address: failed API key checks before that address is told to wait.
+    rate_limit_auth_failures_per_minute: int = Field(default=10, ge=1)
+    rate_limit_auth_failures_burst: int = Field(default=10, ge=1)
+    # Reverse proxies (IPs or CIDRs) whose X-Forwarded-For header is believed when
+    # identifying the client. Empty: the TCP peer address is the client.
+    trusted_proxies: list[str] = Field(default_factory=list)
+
+    # --- API docs ---
+    # Swagger UI at /docs and ReDoc at /redoc. Off in production by default.
+    api_docs: bool | None = None
+
     # --- Uploads ---
     max_upload_mb: int = Field(default=20, ge=1, le=200)
     max_pdf_pages: int = Field(default=2000, ge=1)
@@ -116,12 +136,40 @@ class Settings(BaseSettings):
     # Keep a per-workspace history of questions and answers (shown in the UI).
     ask_history: bool = True
 
+    # --- Entailment check (does each answer sentence follow from its cited passage?) ---
+    # "nli" = local NLI cross-encoder; "lexical" = offline, NON-semantic stand-in for
+    # tests/CI; "none" = no check.
+    entailment_backend: Literal["nli", "lexical", "none"] = "nli"
+    entailment_model: str = "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"
+    entailment_device: Literal["auto", "mps", "cuda", "cpu"] = "auto"
+    entailment_batch_size: int = Field(default=32, ge=1, le=256)
+    entailment_max_length: int = Field(default=512, ge=64, le=2048)
+    entailment_preload: bool = True
+    # "sentences": best score over the whole cited text and every window of up to
+    # `entailment_window_sentences` consecutive sentences in it (NLI models are unsure
+    # on long premises). "passage": the whole cited text only.
+    entailment_granularity: Literal["sentences", "passage"] = "sentences"
+    entailment_window_sentences: int = Field(default=3, ge=1, le=8)
+    # remove = drop sentences below the threshold; flag = keep them but mark them;
+    # off = don't run the check.
+    answer_entailment_mode: Literal["remove", "flag", "off"] = "remove"
+    answer_entailment_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+
     @field_validator("ollama_url")
     @classmethod
     def _ollama_url_shape(cls, v: str) -> str:
         if not v.startswith(("http://", "https://")):
             raise ValueError("ollama_url must start with http:// or https://")
         return v.rstrip("/")
+
+    @field_validator("trusted_proxies")
+    @classmethod
+    def _proxies_are_networks(cls, v: list[str]) -> list[str]:
+        from ipaddress import ip_network
+
+        for entry in v:
+            ip_network(entry, strict=False)  # ValueError -> validation error
+        return v
 
     @field_validator("api_prefix")
     @classmethod
@@ -141,6 +189,10 @@ class Settings(BaseSettings):
         if self.chunk_overlap_tokens >= self.chunk_size_tokens // 2:
             raise ValueError("chunk_overlap_tokens must be less than half of chunk_size_tokens")
         return self
+
+    @property
+    def docs_enabled(self) -> bool:
+        return self.api_docs if self.api_docs is not None else self.environment != "production"
 
     @property
     def uploads_dir(self) -> Path:

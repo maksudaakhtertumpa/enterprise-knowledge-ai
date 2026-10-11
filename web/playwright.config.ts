@@ -26,6 +26,7 @@ const backendEnv = {
   EKA_EMBEDDING_BACKEND: "hashing",
   EKA_RERANKER_BACKEND: "hashing",
   EKA_LLM_BACKEND: "extractive",
+  EKA_ENTAILMENT_BACKEND: "lexical",
   EKA_LOG_LEVEL: "WARNING",
 };
 

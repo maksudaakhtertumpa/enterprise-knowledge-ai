@@ -178,6 +178,31 @@ function Checks({ response }: { response: AskResponse }) {
         ) : (
           <p className="text-muted-foreground">The model was not called (no relevant passages).</p>
         )}
+        {v?.entailment && (
+          <div className="space-y-1.5" data-testid="entailment">
+            <p className="font-medium">Does each sentence follow from its source?</p>
+            <p className="text-xs text-muted-foreground">
+              Checked by {v.entailment.model}; a sentence needs a score of at least{" "}
+              {v.entailment.threshold}.{" "}
+              {v.entailment.mode === "remove"
+                ? `${v.entailment.sentences_removed} removed.`
+                : `${v.entailment.sentences_flagged} flagged (kept).`}
+            </p>
+            {v.entailment.sentences.map((s, i) => (
+              <p key={i} className="text-xs">
+                <span
+                  className={cn(
+                    "mr-2 inline-block rounded px-1.5 py-0.5 font-mono tabular-nums",
+                    s.supported ? "bg-success/15" : "bg-destructive/15",
+                  )}
+                >
+                  {s.score.toFixed(2)}
+                </span>
+                <span className={s.supported ? "" : "line-through opacity-70"}>{s.text}</span>
+              </p>
+            ))}
+          </div>
+        )}
         {v && v.sentences_removed > 0 && (
           <p className="text-muted-foreground">
             {v.sentences_removed} sentence(s) were removed because their citation could not be

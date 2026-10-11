@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
-from app.core.security import WorkspaceContext, get_workspace
+from app.core.security import WorkspaceContext, rate_limited
 from app.db.session import get_db
 from app.schemas.common import ErrorResponse
 from app.schemas.search import SearchRequest, SearchResponse, SearchResult, SourceInfo
@@ -44,12 +44,13 @@ class RerankingDisabledError(AppError):
         401: {"model": ErrorResponse},
         409: {"model": ErrorResponse, "description": "Vectors built with a different model"},
         503: {"model": ErrorResponse, "description": "Reranking requested but disabled"},
+        429: {"model": ErrorResponse, "description": "Rate limit reached; see Retry-After"},
     },
 )
 def search(
     body: SearchRequest,
     request: Request,
-    workspace: Annotated[WorkspaceContext, Depends(get_workspace)],
+    workspace: Annotated[WorkspaceContext, Depends(rate_limited("search"))],
     db: Annotated[Session, Depends(get_db)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> SearchResponse:

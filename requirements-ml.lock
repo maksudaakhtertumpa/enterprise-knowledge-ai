@@ -353,6 +353,8 @@ scipy==1.18.1 ; python_full_version >= '3.12'
     #   sentence-transformers
 sentence-transformers==6.1.0
     # via enterprise-knowledge-ai (pyproject.toml)
+sentencepiece==0.2.2
+    # via enterprise-knowledge-ai (pyproject.toml)
 setuptools==84.0.0
     # via torch
 shellingham==1.5.4

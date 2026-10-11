@@ -36,6 +36,7 @@ dev = [
 ml = [
     "sentence-transformers>=5.0,<7.0",
     "torch>=2.4",
+    "sentencepiece>=0.2",            # tokenizer of the multilingual NLI model (entailment check)
 ]
 
 [tool.setuptools.packages.find]

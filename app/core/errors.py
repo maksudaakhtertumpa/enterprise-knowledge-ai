@@ -40,9 +40,16 @@ class ConflictError(AppError):
     code = "conflict"
 
 
-def _envelope(status: int, code: str, message: str, details: Any = None) -> JSONResponse:
+def _envelope(
+    status: int,
+    code: str,
+    message: str,
+    details: Any = None,
+    headers: dict[str, str] | None = None,
+) -> JSONResponse:
     return JSONResponse(
         status_code=status,
+        headers=headers,
         content={
             "error": {
                 "code": code,
@@ -55,7 +62,9 @@ def _envelope(status: int, code: str, message: str, details: Any = None) -> JSON
 
 
 async def _app_error(_: Request, exc: AppError) -> JSONResponse:
-    return _envelope(exc.status_code, exc.code, exc.message, exc.details)
+    return _envelope(
+        exc.status_code, exc.code, exc.message, exc.details, getattr(exc, "headers", None)
+    )
 
 
 async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
@@ -65,6 +74,7 @@ async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
         404: "not_found",
         405: "method_not_allowed",
         413: "payload_too_large",
+        429: "rate_limited",
     }
     return _envelope(exc.status_code, code.get(exc.status_code, "http_error"), str(exc.detail))
 

@@ -133,3 +133,44 @@ async def _send_413(send: Send) -> None:
         }
     )
     await send({"type": "http.response.body", "body": body})
+
+
+class SecurityHeadersMiddleware:
+    """Defensive response headers for a JSON API.
+
+    The API serves no HTML of its own (except the optional docs pages), so the
+    browser is told: don't sniff content types, don't frame, don't cache, don't
+    send a Referer, and run nothing (CSP default-src 'none'). The docs pages
+    load Swagger UI / ReDoc scripts from a CDN, so they skip the CSP.
+    HSTS belongs on the TLS-terminating reverse proxy (Phase 8), not here.
+    """
+
+    HEADERS = (
+        (b"x-content-type-options", b"nosniff"),
+        (b"x-frame-options", b"DENY"),
+        (b"referrer-policy", b"no-referrer"),
+        (b"cross-origin-opener-policy", b"same-origin"),
+        (b"cache-control", b"no-store"),
+    )
+    CSP = (b"content-security-policy", b"default-src 'none'; frame-ancestors 'none'")
+
+    def __init__(self, app: ASGIApp, docs_paths: tuple[str, ...] = ()) -> None:
+        self.app = app
+        self.docs_paths = docs_paths
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+        is_docs = any(scope["path"].startswith(p) for p in self.docs_paths)
+        extra = self.HEADERS if is_docs else (*self.HEADERS, self.CSP)
+
+        async def send_wrapper(message: Message) -> None:
+            if message["type"] == "http.response.start":
+                headers = list(message.get("headers", []))
+                present = {name.lower() for name, _ in headers}
+                headers.extend((n, v) for n, v in extra if n not in present)
+                message["headers"] = headers
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)

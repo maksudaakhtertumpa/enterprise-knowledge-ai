@@ -48,8 +48,8 @@ def main(argv: list[str] | None = None) -> int:
 
     sub.add_parser(
         "prepare-models",
-        help="Download (first run) and test the embedding model and reranker, and check "
-        "that Ollama answers with a verified citation",
+        help="Download (first run) and test the embedding, reranker and entailment models, "
+        "and check that Ollama answers with a verified citation",
     )
 
     args = parser.parse_args(argv)
@@ -169,9 +169,49 @@ def _prepare_models() -> int:
             ok = False
             print(f"  FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
 
+    ok = _check_entailment(settings) and ok
     ok = _check_llm(settings) and ok
     print("All models ready." if ok else "Some models failed to load (see above).")
     return 0 if ok else 1
+
+
+def _check_entailment(settings) -> bool:
+    """Load the NLI model and check it tells a supported claim from an unsupported one."""
+    import time
+
+    from app.services.generation.entailment import build_entailment_checker, score_claims
+
+    checker = build_entailment_checker(settings)
+    if checker is None:
+        print("Entailment check: disabled")
+        return True
+    print(f"Entailment model: {checker.model_name} ({settings.entailment_backend})")
+    t0 = time.perf_counter()
+    premise = (
+        "Staff with less than two years of service receive 14 working days of annual leave. "
+        "Unused annual leave of up to 5 days may be carried forward."
+    )
+    try:
+        checker.load()
+        supported, unsupported = score_claims(
+            checker,
+            [
+                ([premise], "New staff get 14 working days of annual leave."),
+                ([premise], "Unused medical leave can be carried forward."),
+            ],
+            granularity=settings.entailment_granularity,
+            window=settings.entailment_window_sentences,
+        )
+        print(
+            f"  ready in {time.perf_counter() - t0:.1f} s; test scores "
+            f"supported={supported:.3f} unsupported={unsupported:.3f}"
+        )
+        if settings.entailment_backend == "nli" and supported <= unsupported:
+            print("  WARNING: the model did not prefer the supported claim", file=sys.stderr)
+        return True
+    except Exception as exc:  # noqa: BLE001
+        print(f"  FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return False
 
 
 def _check_llm(settings) -> bool:

@@ -121,6 +121,7 @@ def test_oversize_upload_rejected_with_413(tmp_path):
         max_upload_mb=1,
         embedding_backend="hashing",
         reranker_backend="hashing",
+        entailment_backend="lexical",
         llm_backend="extractive",
         _env_file=None,
     )
@@ -245,6 +246,7 @@ def test_restart_marks_interrupted_jobs_failed(tmp_path):
         data_dir=tmp_path,
         embedding_backend="hashing",
         reranker_backend="hashing",
+        entailment_backend="lexical",
         llm_backend="extractive",
         _env_file=None,
     )

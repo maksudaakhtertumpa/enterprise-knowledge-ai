@@ -1,0 +1,48 @@
+{"id": "HL01", "category": "lexical", "query": "Microsoft Authenticator app", "relevant": [{"doc": "it-security.txt", "section": "Multi-Factor Authentication"}]}
+{"id": "HL02", "category": "lexical", "query": "Company Portal catalogue", "relevant": [{"doc": "it-security.txt", "section": "Software Installation"}]}
+{"id": "HL03", "category": "lexical", "query": "1-800-88-7788 hotline", "relevant": [{"doc": "code-of-conduct.txt", "section": "Whistleblowing"}]}
+{"id": "HL04", "category": "lexical", "query": "Conflict Declaration form", "relevant": [{"doc": "code-of-conduct.txt", "section": "Conflicts of Interest"}]}
+{"id": "HL05", "category": "lexical", "query": "RM 10,000 monthly card limit", "relevant": [{"doc": "procurement.txt", "section": "Corporate Credit Cards"}]}
+{"id": "HL06", "category": "lexical", "query": "USD 75 overseas allowance", "relevant": [{"doc": "travel-and-expense.txt", "section": "Overseas Travel"}]}
+{"id": "HL07", "category": "lexical", "query": "Promotion Committee", "relevant": [{"doc": "performance.txt", "section": "Promotions"}]}
+{"id": "HL08", "category": "lexical", "query": "Menara Teratai opening hours", "relevant": [{"doc": "facilities.txt", "section": "Office Access"}]}
+{"id": "HP01", "category": "paraphrase", "query": "How soon must I upload my sick note after I'm back at work?", "relevant": [{"doc": "leave-policy.txt", "section": "Medical Leave"}]}
+{"id": "HP02", "category": "paraphrase", "query": "How long is paid leave for a new mother?", "relevant": [{"doc": "leave-policy.txt", "section": "Maternity and Paternity Leave"}]}
+{"id": "HP03", "category": "paraphrase", "query": "What is the yearly limit for dental claims?", "relevant": [{"doc": "benefits.txt", "section": "Dental Benefits"}]}
+{"id": "HP04", "category": "paraphrase", "query": "Will the company pay for teeth whitening?", "relevant": [{"doc": "benefits.txt", "section": "Dental Benefits"}]}
+{"id": "HP05", "category": "paraphrase", "query": "How often can I claim for new spectacles?", "relevant": [{"doc": "benefits.txt", "section": "Optical Benefits"}]}
+{"id": "HP06", "category": "paraphrase", "query": "Can my mother use the free counselling service?", "relevant": [{"doc": "benefits.txt", "section": "Employee Assistance Programme"}]}
+{"id": "HP07", "category": "paraphrase", "query": "How long must my password be?", "relevant": [{"doc": "it-security.txt", "section": "Password Requirements"}]}
+{"id": "HP08", "category": "paraphrase", "query": "Can I use text message codes for two-factor login?", "relevant": [{"doc": "it-security.txt", "section": "Multi-Factor Authentication"}]}
+{"id": "HP09", "category": "paraphrase", "query": "Why does my VPN connection drop after a long working day?", "relevant": [{"doc": "it-security.txt", "section": "VPN Access"}]}
+{"id": "HP10", "category": "paraphrase", "query": "How long can I book a meeting room for?", "relevant": [{"doc": "facilities.txt", "section": "Meeting Room Booking"}]}
+{"id": "HP11", "category": "paraphrase", "query": "What time does the office close on weekdays?", "relevant": [{"doc": "facilities.txt", "section": "Office Access"}]}
+{"id": "HP12", "category": "paraphrase", "query": "I found someone's umbrella in the office, where do I take it?", "relevant": [{"doc": "facilities.txt", "section": "Lost and Found"}]}
+{"id": "HP13", "category": "paraphrase", "query": "What daily meal allowance do I get on a business trip to Kota Kinabalu?", "relevant": [{"doc": "travel-and-expense.txt", "section": "Daily Allowance"}], "note": "Needs the world knowledge that Kota Kinabalu is in Sabah; the passage only says 'Sabah and Sarawak'."}
+{"id": "HP14", "category": "paraphrase", "query": "What's the most I can spend on a hotel per night for a trip within Malaysia?", "relevant": [{"doc": "travel-and-expense.txt", "section": "Booking Business Travel"}]}
+{"id": "HP15", "category": "paraphrase", "query": "Do I need a receipt for a RM 15 taxi fare?", "relevant": [{"doc": "travel-and-expense.txt", "section": "Submitting Expense Claims"}]}
+{"id": "HP16", "category": "paraphrase", "query": "Who can approve business class for a long flight?", "relevant": [{"doc": "travel-and-expense.txt", "section": "Booking Business Travel"}]}
+{"id": "HP17", "category": "paraphrase", "query": "How can I report fraud without giving my name?", "relevant": [{"doc": "code-of-conduct.txt", "section": "Whistleblowing"}]}
+{"id": "HP18", "category": "paraphrase", "query": "How long is probation for someone hired as a manager?", "relevant": [{"doc": "onboarding.txt", "section": "Probation Period"}]}
+{"id": "HP19", "category": "paraphrase", "query": "How long do new joiners have to finish the compulsory online courses?", "relevant": [{"doc": "onboarding.txt", "section": "Mandatory Training"}]}
+{"id": "HP20", "category": "paraphrase", "query": "Which days must I be in the office on a hybrid schedule?", "relevant": [{"doc": "remote-work.txt", "section": "Hybrid Schedule"}]}
+{"id": "HP21", "category": "paraphrase", "query": "What is the monthly spending limit on a corporate card?", "relevant": [{"doc": "procurement.txt", "section": "Corporate Credit Cards"}]}
+{"id": "HP22", "category": "paraphrase", "query": "Will I get a salary increase if I'm rated 1?", "relevant": [{"doc": "performance.txt", "section": "Salary Increments"}]}
+{"id": "HP23", "category": "paraphrase", "query": "How long is CCTV footage kept?", "relevant": [{"doc": "data-protection.txt", "section": "Data Retention"}]}
+{"id": "HP24", "category": "paraphrase", "query": "How long does the company have to answer my request to see my personal data?", "relevant": [{"doc": "data-protection.txt", "section": "Data Subject Requests"}]}
+{"id": "HM01", "category": "malay", "query": "Berapa hari cuti paterniti untuk bapa?", "relevant": [{"doc": "leave-policy.txt", "section": "Maternity and Paternity Leave"}]}
+{"id": "HM02", "category": "malay", "query": "Berapakah elaun kesejahteraan setahun?", "relevant": [{"doc": "benefits.txt", "section": "Wellness Allowance"}]}
+{"id": "HM03", "category": "malay", "query": "Bilakah kenaikan gaji tahunan berkuat kuasa?", "relevant": [{"doc": "performance.txt", "section": "Salary Increments"}]}
+{"id": "HM04", "category": "malay", "query": "Berapa lama barang yang hilang disimpan di kaunter penyambut tetamu?", "relevant": [{"doc": "facilities.txt", "section": "Lost and Found"}]}
+{"id": "HM05", "category": "malay", "query": "Berapa hari cuti ihsan jika ibu bapa meninggal dunia?", "relevant": [{"doc": "leave-policy.txt", "section": "Emergency Leave"}]}
+{"id": "HM06", "category": "malay", "query": "Berapa lama notis untuk menamatkan susunan kerja hibrid?", "relevant": [{"doc": "remote-work.txt", "section": "Ending a Hybrid Arrangement"}]}
+{"id": "HU01", "category": "unanswerable", "query": "How many days of paternity leave do fathers get when adopting a child?", "relevant": [], "note": "Hard negative: paternity leave is defined from the child's birth only."}
+{"id": "HU02", "category": "unanswerable", "query": "What is the hotel limit per night for a business trip to Singapore?", "relevant": [], "note": "Hard negative: the RM 350 cap is for Malaysia; Singapore only has a daily allowance."}
+{"id": "HU03", "category": "unanswerable", "query": "What mileage rate can I claim for using my motorcycle?", "relevant": [], "note": "Hard negative: mileage rates are for staff using their own car."}
+{"id": "HU04", "category": "unanswerable", "query": "How long is the probation period for interns?", "relevant": [], "note": "Hard negative: probation is defined for executives and managers."}
+{"id": "HU05", "category": "unanswerable", "query": "What is the notice period after my probation is confirmed?", "relevant": [], "note": "Hard negative: only the notice period during probation is stated."}
+{"id": "HU06", "category": "unanswerable", "query": "Berapa hari cuti perkahwinan yang diberikan?", "relevant": []}
+{"id": "HU07", "category": "unanswerable", "query": "Does the company offer a housing loan subsidy?", "relevant": []}
+{"id": "HU08", "category": "unanswerable", "query": "How many days of study leave can I take before a certification exam?", "relevant": [], "note": "Hard negative: sponsorship covers fees, not leave."}
+{"id": "HU09", "category": "unanswerable", "query": "What is the guest Wi-Fi password?", "relevant": []}
+{"id": "HU10", "category": "unanswerable", "query": "How much is the employer's EPF contribution rate?", "relevant": []}

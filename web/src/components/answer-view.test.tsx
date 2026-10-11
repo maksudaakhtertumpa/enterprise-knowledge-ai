@@ -137,3 +137,35 @@ describe("AnswerView", () => {
     expect(screen.getByText(/1 sentence\(s\) were removed/)).toBeInTheDocument();
   });
 });
+
+describe("AnswerView entailment panel", () => {
+  it("shows each sentence's entailment score and what was removed", async () => {
+    const base = response();
+    show(
+      response({
+        verification: {
+          ...base.verification!,
+          entailment: {
+            model: "nli-test",
+            mode: "remove",
+            threshold: 0.5,
+            sentences_removed: 1,
+            sentences_flagged: 1,
+            sentences: [
+              { text: "Staff receive 14 working days [1].", score: 0.97, supported: true },
+              { text: "Medical leave carries forward [1].", score: 0.03, supported: false },
+            ],
+          },
+        },
+      }),
+    );
+    await userEvent.click(screen.getByText("How this answer was checked"));
+    const panel = screen.getByTestId("entailment");
+    expect(panel).toHaveTextContent("Checked by nli-test");
+    expect(panel).toHaveTextContent("1 removed.");
+    expect(within(panel).getByText("0.03")).toBeInTheDocument();
+    expect(within(panel).getByText("Medical leave carries forward [1].")).toHaveClass(
+      "line-through",
+    );
+  });
+});

@@ -123,6 +123,8 @@ export const REASONS: Record<string, string> = {
     "The model drafted an answer, but none of its citations could be verified against the passages, so it was withheld.",
   model_output_invalid:
     "The model's reply was not in the expected format, so it was withheld. Asking again usually works.",
+  claims_not_supported:
+    "The model's quotes were real, but its sentences said more than the quotes support, so they were withheld.",
 };
 
 export function reasonText(reason: string | null | undefined): string {

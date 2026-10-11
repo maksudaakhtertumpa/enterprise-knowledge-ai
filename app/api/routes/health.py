@@ -73,6 +73,17 @@ def _check_reranker(request: Request, settings: Settings) -> ComponentCheck:
     return ComponentCheck(name="reranker", ok=not settings.reranker_preload, detail="not loaded")
 
 
+def _check_entailment(request: Request, settings: Settings) -> ComponentCheck:
+    checker = request.app.state.services.entailment
+    if checker is None:
+        return ComponentCheck(name="entailment_model", ok=True, detail="disabled")
+    if checker.is_loaded:
+        return ComponentCheck(name="entailment_model", ok=True, detail=checker.model_name)
+    return ComponentCheck(
+        name="entailment_model", ok=not settings.entailment_preload, detail="not loaded"
+    )
+
+
 def _check_llm(request: Request) -> ComponentCheck:
     llm = request.app.state.services.llm
     if llm is None:
@@ -94,6 +105,7 @@ def ready(request: Request, settings: Settings = Depends(get_settings)) -> JSONR
         _check_vector_store(request),
         _check_embedder(request, settings),
         _check_reranker(request, settings),
+        _check_entailment(request, settings),
         _check_llm(request),
     ]
     is_ready = all(c.ok for c in checks if c.required)

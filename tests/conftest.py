@@ -21,6 +21,7 @@ def settings(tmp_path: Path) -> Settings:
         embedding_backend="hashing",
         reranker_backend="hashing",
         llm_backend="extractive",
+        entailment_backend="lexical",
         # Plain retrieval by default in tests, so each test controls reranking explicitly.
         rerank_by_default=False,
         _env_file=None,

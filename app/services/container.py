@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import Settings
 from app.db.session import build_engine, build_session_factory
+from app.services.generation.entailment import EntailmentChecker, build_entailment_checker
 from app.services.generation.llm import LLMClient, build_llm
 from app.services.retrieval.embeddings import Embedder, build_embedder
 from app.services.retrieval.reranker import Reranker, build_reranker
@@ -26,6 +27,7 @@ class Services:
     vectors: VectorStore
     reranker: Reranker | None = None
     llm: LLMClient | None = None
+    entailment: EntailmentChecker | None = None
 
     def close(self) -> None:
         """Release file handles and connections (called on shutdown)."""
@@ -43,4 +45,5 @@ def build_services(settings: Settings) -> Services:
         vectors=VectorStore(settings.chroma_dir),
         reranker=build_reranker(settings),
         llm=build_llm(settings),
+        entailment=build_entailment_checker(settings),
     )

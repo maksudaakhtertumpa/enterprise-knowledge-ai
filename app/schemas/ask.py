@@ -74,12 +74,30 @@ class RejectedCitationOut(BaseModel):
     reason: Literal["unknown_passage", "quote_not_found", "quote_too_short"]
 
 
+class SentenceCheckOut(BaseModel):
+    text: str = Field(..., description="The sentence as the model wrote it, with markers")
+    score: float = Field(..., description="P(entailment) given the passages it cites, 0-1")
+    supported: bool = Field(..., description="score >= threshold")
+
+
+class EntailmentOut(BaseModel):
+    model: str
+    mode: Literal["remove", "flag"]
+    threshold: float
+    sentences_removed: int = Field(..., description="Dropped because not entailed (mode remove)")
+    sentences_flagged: int = Field(..., description="Below the threshold (either mode)")
+    sentences: list[SentenceCheckOut] = Field(default_factory=list)
+
+
 class VerificationOut(BaseModel):
     citations_proposed: int
     citations_verified: int
     sentences_total: int
     sentences_removed: int = Field(..., description="Answer sentences dropped for lack of support")
     rejected: list[RejectedCitationOut] = Field(default_factory=list)
+    entailment: EntailmentOut | None = Field(
+        None, description="Sentence-level entailment check (null when disabled)"
+    )
 
 
 class Usage(BaseModel):
@@ -96,7 +114,7 @@ class AskResponse(BaseModel):
     reason: str | None = Field(
         None,
         description="Why there is no answer: no_relevant_passages, low_retrieval_score, "
-        "model_declined, no_verified_citations, model_output_invalid",
+        "model_declined, no_verified_citations, model_output_invalid, claims_not_supported",
     )
     citations: list[Citation] = Field(default_factory=list)
     evidence: list[EvidenceOut] = Field(

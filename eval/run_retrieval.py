@@ -51,8 +51,20 @@ DEFAULT_OUT = ROOT / "eval" / "results"
 KS = (1, 3, 5, 10)
 
 
+def corpus_dir(path: Path) -> Path:
+    """A dataset's documents: its own corpus/ folder, or the one dataset.json points at.
+
+    The held-out set reuses the teratai documents with new questions, so it has no
+    corpus of its own.
+    """
+    if (path / "corpus").is_dir():
+        return path / "corpus"
+    meta = json.loads((path / "dataset.json").read_text())
+    return (path / meta["corpus"]).resolve()
+
+
 def load_dataset(path: Path) -> tuple[list[Path], list[dict[str, Any]], str]:
-    corpus = sorted((path / "corpus").glob("*.txt"))
+    corpus = sorted(corpus_dir(path).glob("*.txt"))
     queries = [
         json.loads(line) for line in (path / "queries.jsonl").read_text().splitlines() if line
     ]

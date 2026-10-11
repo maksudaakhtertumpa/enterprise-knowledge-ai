@@ -18,7 +18,12 @@ from app.api.routes import analytics, ask, documents, health, search, workspace
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
-from app.core.middleware import BodySizeLimitMiddleware, RequestContextMiddleware
+from app.core.middleware import (
+    BodySizeLimitMiddleware,
+    RequestContextMiddleware,
+    SecurityHeadersMiddleware,
+)
+from app.core.ratelimit import RateLimits
 from app.db.session import init_db
 from app.repositories.documents import DocumentRepository
 from app.schemas.common import ErrorResponse
@@ -51,6 +56,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         reranker = app.state.services.reranker
         if reranker is not None and settings.reranker_preload:
             await asyncio.to_thread(reranker.load)
+        entailment = app.state.services.entailment
+        if entailment is not None and settings.entailment_preload:
+            await asyncio.to_thread(entailment.load)
         llm = app.state.services.llm
         if llm is not None:
             # Not required for startup: search works without the LLM. Warn early instead.
@@ -65,6 +73,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "interrupted_jobs_marked_failed": interrupted,
                 "embedding": embedder.describe(),
                 "reranker": reranker.describe() if reranker else None,
+                "entailment": entailment.describe() if entailment else None,
                 "llm": llm.describe() if llm else None,
             },
         )
@@ -80,6 +89,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         description="Hybrid-search RAG platform with grounded, citation-verified answers.",
         debug=settings.debug,
         lifespan=lifespan,
+        docs_url="/docs" if settings.docs_enabled else None,
+        redoc_url="/redoc" if settings.docs_enabled else None,
+        openapi_url="/openapi.json" if settings.docs_enabled else None,
         responses={
             422: {"model": ErrorResponse, "description": "Validation error"},
             500: {"model": ErrorResponse, "description": "Internal error"},
@@ -92,9 +104,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.services = services
     app.state.engine = services.engine
     app.state.session_factory = services.session_factory
+    app.state.rate_limits = RateLimits(settings)
 
     # Middleware: last added runs outermost. Order, outside -> in:
-    # RequestContext (request ID, access log) -> BodySizeLimit -> CORS -> app.
+    # RequestContext (request ID, access log) -> SecurityHeaders -> BodySizeLimit
+    # -> CORS -> app. Security headers sit outside the size limit so even a 413 has them.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -106,6 +120,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.add_middleware(
         BodySizeLimitMiddleware, max_bytes=settings.max_upload_bytes + _MULTIPART_OVERHEAD
     )
+    app.add_middleware(SecurityHeadersMiddleware, docs_paths=("/docs", "/redoc"))
     app.add_middleware(RequestContextMiddleware)
 
     register_exception_handlers(app)

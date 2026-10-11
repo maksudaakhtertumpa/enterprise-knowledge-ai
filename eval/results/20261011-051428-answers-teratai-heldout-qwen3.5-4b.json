@@ -1,0 +1,1838 @@
+{
+  "label": "teratai-heldout-qwen3.5-4b",
+  "timestamp": "2026-10-11T05:14:28+00:00",
+  "dataset": "teratai-heldout",
+  "dataset_hash": "c6ff23b40861",
+  "passages": 5,
+  "environment": {
+    "platform": "macOS-26.3.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.11.9",
+    "embedding": {
+      "backend": "sentence-transformers",
+      "model": "Qwen/Qwen3-Embedding-0.6B",
+      "device": "mps",
+      "dimension": 1024,
+      "max_tokens": 32768
+    },
+    "chunk_size_tokens": 400,
+    "chunk_overlap_tokens": 60,
+    "reranker": {
+      "backend": "cross-encoder",
+      "model": "BAAI/bge-reranker-v2-m3",
+      "device": "mps",
+      "dtype": "float16",
+      "max_length": 512
+    },
+    "rerank_candidates": 10,
+    "fusion": {
+      "rrf_k": 10,
+      "candidates": 20,
+      "bm25_weight": 0.25,
+      "dense_weight": 1.0
+    },
+    "torch": "2.14.1",
+    "git_commit": "ae9e61e",
+    "llm": {
+      "backend": "ollama",
+      "model": "qwen3.5:4b",
+      "url": "http://localhost:11434",
+      "num_ctx": 8192,
+      "max_tokens": 512,
+      "temperature": 0.0
+    }
+  },
+  "entailment": {
+    "backend": "nli",
+    "model": "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7",
+    "device": "mps",
+    "max_length": 512,
+    "granularity": "sentences",
+    "window_sentences": 3
+  },
+  "summary": {
+    "overall": {
+      "questions": 40,
+      "answerable": 30,
+      "unanswerable": 10,
+      "answer_rate": 0.8667,
+      "fact_recall": 0.8666666666666667,
+      "fact_recall_when_answered": 1.0,
+      "citation_precision": 1.0,
+      "unsupported_sentence_rate": 0.0333,
+      "citations_verified_rate": 0.871,
+      "correct_refusal_rate": 0.9,
+      "latency_p50_ms": 5276.21,
+      "latency_p95_ms": 7391.257,
+      "prompt_tokens_mean": 997.125,
+      "completion_tokens_mean": 58.775,
+      "cost_usd": 0.0
+    },
+    "by_category": {
+      "paraphrase": {
+        "questions": 24,
+        "answerable": 24,
+        "unanswerable": 0,
+        "answer_rate": 0.9167,
+        "fact_recall": 0.9166666666666666,
+        "fact_recall_when_answered": 1.0,
+        "citation_precision": 1.0,
+        "unsupported_sentence_rate": 0.04,
+        "citations_verified_rate": 0.88,
+        "correct_refusal_rate": null,
+        "latency_p50_ms": 5302.305,
+        "latency_p95_ms": 7106.816,
+        "prompt_tokens_mean": 988.125,
+        "completion_tokens_mean": 67.625,
+        "cost_usd": 0.0
+      },
+      "malay": {
+        "questions": 6,
+        "answerable": 6,
+        "unanswerable": 0,
+        "answer_rate": 0.6667,
+        "fact_recall": 0.6666666666666666,
+        "fact_recall_when_answered": 1.0,
+        "citation_precision": 1.0,
+        "unsupported_sentence_rate": 0.0,
+        "citations_verified_rate": 0.8,
+        "correct_refusal_rate": null,
+        "latency_p50_ms": 6944.925,
+        "latency_p95_ms": 8485.875,
+        "prompt_tokens_mean": 1004.0,
+        "completion_tokens_mean": 72.5,
+        "cost_usd": 0.0
+      },
+      "unanswerable": {
+        "questions": 10,
+        "answerable": 0,
+        "unanswerable": 10,
+        "answer_rate": null,
+        "fact_recall": null,
+        "fact_recall_when_answered": null,
+        "citation_precision": null,
+        "unsupported_sentence_rate": 0.0,
+        "citations_verified_rate": 1.0,
+        "correct_refusal_rate": 0.9,
+        "latency_p50_ms": 5178.5,
+        "latency_p95_ms": 6200.5554999999995,
+        "prompt_tokens_mean": 1014.6,
+        "completion_tokens_mean": 29.3,
+        "cost_usd": 0.0
+      }
+    }
+  },
+  "gate": [
+    {
+      "threshold": 0.0,
+      "answerable_reaching_model": 1.0,
+      "answer_rate": 0.8667,
+      "correct_refusal_rate": 0.9,
+      "llm_calls_saved": 0.0
+    },
+    {
+      "threshold": 0.005,
+      "answerable_reaching_model": 1.0,
+      "answer_rate": 0.8667,
+      "correct_refusal_rate": 0.9,
+      "llm_calls_saved": 0.125
+    },
+    {
+      "threshold": 0.01,
+      "answerable_reaching_model": 0.9333,
+      "answer_rate": 0.8,
+      "correct_refusal_rate": 0.9,
+      "llm_calls_saved": 0.175
+    },
+    {
+      "threshold": 0.02,
+      "answerable_reaching_model": 0.9,
+      "answer_rate": 0.8,
+      "correct_refusal_rate": 0.9,
+      "llm_calls_saved": 0.2
+    },
+    {
+      "threshold": 0.03,
+      "answerable_reaching_model": 0.8333,
+      "answer_rate": 0.7667,
+      "correct_refusal_rate": 0.9,
+      "llm_calls_saved": 0.25
+    },
+    {
+      "threshold": 0.05,
+      "answerable_reaching_model": 0.8333,
+      "answer_rate": 0.7667,
+      "correct_refusal_rate": 1.0,
+      "llm_calls_saved": 0.275
+    },
+    {
+      "threshold": 0.075,
+      "answerable_reaching_model": 0.7333,
+      "answer_rate": 0.7,
+      "correct_refusal_rate": 1.0,
+      "llm_calls_saved": 0.375
+    },
+    {
+      "threshold": 0.1,
+      "answerable_reaching_model": 0.7333,
+      "answer_rate": 0.7,
+      "correct_refusal_rate": 1.0,
+      "llm_calls_saved": 0.375
+    },
+    {
+      "threshold": 0.15,
+      "answerable_reaching_model": 0.7333,
+      "answer_rate": 0.7,
+      "correct_refusal_rate": 1.0,
+      "llm_calls_saved": 0.375
+    },
+    {
+      "threshold": 0.2,
+      "answerable_reaching_model": 0.7,
+      "answer_rate": 0.6667,
+      "correct_refusal_rate": 1.0,
+      "llm_calls_saved": 0.4
+    },
+    {
+      "threshold": 0.3,
+      "answerable_reaching_model": 0.6333,
+      "answer_rate": 0.6,
+      "correct_refusal_rate": 1.0,
+      "llm_calls_saved": 0.45
+    },
+    {
+      "threshold": 0.5,
+      "answerable_reaching_model": 0.6,
+      "answer_rate": 0.5667,
+      "correct_refusal_rate": 1.0,
+      "llm_calls_saved": 0.475
+    }
+  ],
+  "entailment_table": [
+    {
+      "threshold": 0.0,
+      "answer_rate": 0.8667,
+      "fact_recall": 0.8666666666666667,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0
+    },
+    {
+      "threshold": 0.05,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.1,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.2,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.3,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.4,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.5,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.6,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.7,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.8,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    },
+    {
+      "threshold": 0.9,
+      "answer_rate": 0.8333,
+      "fact_recall": 0.8333333333333334,
+      "correct_refusal_rate": 0.9,
+      "sentences_removed": 0.0345
+    }
+  ],
+  "injection": [],
+  "rows": [
+    {
+      "id": "HP01",
+      "category": "paraphrase",
+      "question": "How soon must I upload my sick note after I'm back at work?",
+      "status": "answered",
+      "reason": null,
+      "answer": "You must upload a medical certificate to HRPortal within 48 hours of returning to work [1].",
+      "top_rerank_score": 0.4369824230670929,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 6081.66,
+      "generate_ms": 5080.48,
+      "prompt_tokens": 1049,
+      "completion_tokens": 60,
+      "evidence_sections": [
+        "leave-policy.txt > Medical Leave",
+        "leave-policy.txt > Emergency Leave",
+        "data-protection.txt > Data Breach Response",
+        "travel-and-expense.txt > Submitting Expense Claims",
+        "onboarding.txt > Before Your First Day"
+      ],
+      "facts": [
+        [
+          "48 hours"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "You must upload a medical certificate to HRPortal within 48 hours of returning to work.",
+          "score": 0.9958
+        }
+      ],
+      "entailment_ms": 493.54
+    },
+    {
+      "id": "HP02",
+      "category": "paraphrase",
+      "question": "How long is paid leave for a new mother?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Female employees are entitled to 98 consecutive days of paid maternity leave for each confinement [1].",
+      "top_rerank_score": 0.7277820706367493,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 6419.23,
+      "generate_ms": 5584.89,
+      "prompt_tokens": 1000,
+      "completion_tokens": 84,
+      "evidence_sections": [
+        "leave-policy.txt > Maternity and Paternity Leave",
+        "leave-policy.txt > Unpaid Leave",
+        "leave-policy.txt > Medical Leave",
+        "leave-policy.txt > Emergency Leave",
+        "leave-policy.txt > Carry Forward"
+      ],
+      "facts": [
+        [
+          "98"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Female employees are entitled to 98 consecutive days of paid maternity leave for each confinement.",
+          "score": 0.9947
+        }
+      ],
+      "entailment_ms": 318.43
+    },
+    {
+      "id": "HP03",
+      "category": "paraphrase",
+      "question": "What is the yearly limit for dental claims?",
+      "status": "answered",
+      "reason": null,
+      "answer": "The yearly limit for dental claims is RM 500 [1].",
+      "top_rerank_score": 0.6309123635292053,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 4954.06,
+      "generate_ms": 4226.37,
+      "prompt_tokens": 887,
+      "completion_tokens": 57,
+      "evidence_sections": [
+        "benefits.txt > Dental Benefits",
+        "benefits.txt > Medical Insurance",
+        "benefits.txt > Optical Benefits",
+        "travel-and-expense.txt > Submitting Expense Claims",
+        "benefits.txt > Wellness Allowance"
+      ],
+      "facts": [
+        [
+          "RM 500",
+          "RM500"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "The yearly limit for dental claims is RM 500.",
+          "score": 0.9973
+        }
+      ],
+      "entailment_ms": 202.62
+    },
+    {
+      "id": "HP04",
+      "category": "paraphrase",
+      "question": "Will the company pay for teeth whitening?",
+      "status": "answered",
+      "reason": null,
+      "answer": "No, cosmetic treatments such as whitening are not covered by dental benefits [1].",
+      "top_rerank_score": 0.26798248291015625,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5167.89,
+      "generate_ms": 4540.17,
+      "prompt_tokens": 958,
+      "completion_tokens": 60,
+      "evidence_sections": [
+        "benefits.txt > Dental Benefits",
+        "code-of-conduct.txt > Whistleblowing",
+        "benefits.txt > Professional Certification Sponsorship",
+        "travel-and-expense.txt > Daily Allowance",
+        "benefits.txt > Optical Benefits"
+      ],
+      "facts": [
+        [
+          "not covered",
+          "not claimable",
+          "not reimbursed",
+          "excluded",
+          "cannot be claimed",
+          "cannot claim"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "No, cosmetic treatments such as whitening are not covered by dental benefits.",
+          "score": 0.9961
+        }
+      ],
+      "entailment_ms": 201.6
+    },
+    {
+      "id": "HP05",
+      "category": "paraphrase",
+      "question": "How often can I claim for new spectacles?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Employees may claim up to RM 300 every two years for spectacles [1]. The two-year period is counted from the date of the previous claim [1].",
+      "top_rerank_score": 0.5326074361801147,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 2,
+      "sentences_total": 2,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 7187.54,
+      "generate_ms": 6387.28,
+      "prompt_tokens": 941,
+      "completion_tokens": 108,
+      "evidence_sections": [
+        "benefits.txt > Optical Benefits",
+        "travel-and-expense.txt > Submitting Expense Claims",
+        "benefits.txt > Dental Benefits",
+        "travel-and-expense.txt > Non-Claimable Expenses",
+        "travel-and-expense.txt > Mileage Claims"
+      ],
+      "facts": [
+        [
+          "two years",
+          "2 years"
+        ],
+        [
+          "RM 300",
+          "RM300"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Employees may claim up to RM 300 every two years for spectacles.",
+          "score": 0.9978
+        },
+        {
+          "text": "The two-year period is counted from the date of the previous claim.",
+          "score": 0.9933
+        }
+      ],
+      "entailment_ms": 398.46
+    },
+    {
+      "id": "HP06",
+      "category": "paraphrase",
+      "question": "Can my mother use the free counselling service?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Yes, your mother can use the free counselling service as it covers immediate family members [1].",
+      "top_rerank_score": 0.05942821875214577,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5306.08,
+      "generate_ms": 4712.25,
+      "prompt_tokens": 987,
+      "completion_tokens": 60,
+      "evidence_sections": [
+        "benefits.txt > Employee Assistance Programme",
+        "benefits.txt > Medical Insurance",
+        "leave-policy.txt > Maternity and Paternity Leave",
+        "code-of-conduct.txt > Whistleblowing",
+        "onboarding.txt > Buddy Programme"
+      ],
+      "facts": [
+        [
+          "immediate family",
+          "family members"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Yes, your mother can use the free counselling service as it covers immediate family members.",
+          "score": 0.0381
+        }
+      ],
+      "entailment_ms": 205.64
+    },
+    {
+      "id": "HP07",
+      "category": "paraphrase",
+      "question": "How long must my password be?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Passwords for company systems must be at least 14 characters long [1].",
+      "top_rerank_score": 0.9410070180892944,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5981.32,
+      "generate_ms": 5282.48,
+      "prompt_tokens": 1005,
+      "completion_tokens": 75,
+      "evidence_sections": [
+        "it-security.txt > Password Requirements",
+        "data-protection.txt > Data Breach Response",
+        "it-security.txt > Lost or Stolen Devices",
+        "it-security.txt > Multi-Factor Authentication",
+        "onboarding.txt > Mandatory Training"
+      ],
+      "facts": [
+        [
+          "14"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Passwords for company systems must be at least 14 characters long.",
+          "score": 0.9982
+        }
+      ],
+      "entailment_ms": 275.2
+    },
+    {
+      "id": "HP08",
+      "category": "paraphrase",
+      "question": "Can I use text message codes for two-factor login?",
+      "status": "answered",
+      "reason": null,
+      "answer": "SMS codes are only allowed as a temporary fallback for up to seven days while a replacement phone is set up [1].",
+      "top_rerank_score": 0.17441026866436005,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5759.3,
+      "generate_ms": 5099.47,
+      "prompt_tokens": 1010,
+      "completion_tokens": 76,
+      "evidence_sections": [
+        "it-security.txt > Multi-Factor Authentication",
+        "it-security.txt > Password Requirements",
+        "it-security.txt > Phishing and Suspicious Email",
+        "remote-work.txt > Security When Working Remotely",
+        "it-security.txt > Lost or Stolen Devices"
+      ],
+      "facts": [
+        [
+          "seven days",
+          "7 days"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "SMS codes are only allowed as a temporary fallback for up to seven days while a replacement phone is set up.",
+          "score": 0.9911
+        }
+      ],
+      "entailment_ms": 257.48
+    },
+    {
+      "id": "HP09",
+      "category": "paraphrase",
+      "question": "Why does my VPN connection drop after a long working day?",
+      "status": "answered",
+      "reason": null,
+      "answer": "VPN sessions disconnect automatically after 10 hours [1].",
+      "top_rerank_score": 0.05070536583662033,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 4640.17,
+      "generate_ms": 4042.5,
+      "prompt_tokens": 984,
+      "completion_tokens": 49,
+      "evidence_sections": [
+        "it-security.txt > VPN Access",
+        "remote-work.txt > Security When Working Remotely",
+        "it-security.txt > Multi-Factor Authentication",
+        "remote-work.txt > Working Hours and Availability",
+        "remote-work.txt > Ending a Hybrid Arrangement"
+      ],
+      "facts": [
+        [
+          "10 hours",
+          "ten hours"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "VPN sessions disconnect automatically after 10 hours.",
+          "score": 0.9826
+        }
+      ],
+      "entailment_ms": 243.85
+    },
+    {
+      "id": "HP10",
+      "category": "paraphrase",
+      "question": "How long can I book a meeting room for?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Meeting rooms are booked through Outlook and are limited to two hours at a time [1].",
+      "top_rerank_score": 0.9649873375892639,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 4760.41,
+      "generate_ms": 4135.91,
+      "prompt_tokens": 945,
+      "completion_tokens": 55,
+      "evidence_sections": [
+        "facilities.txt > Meeting Room Booking",
+        "travel-and-expense.txt > Booking Business Travel",
+        "remote-work.txt > Hybrid Schedule",
+        "onboarding.txt > Buddy Programme",
+        "onboarding.txt > Probation Period"
+      ],
+      "facts": [
+        [
+          "two hours",
+          "2 hours"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Meeting rooms are booked through Outlook and are limited to two hours at a time.",
+          "score": 0.9984
+        }
+      ],
+      "entailment_ms": 217.45
+    },
+    {
+      "id": "HP11",
+      "category": "paraphrase",
+      "question": "What time does the office close on weekdays?",
+      "status": "answered",
+      "reason": null,
+      "answer": "The office closes at 10:00 pm on weekdays [1].",
+      "top_rerank_score": 0.9367494583129883,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5120.79,
+      "generate_ms": 4472.91,
+      "prompt_tokens": 958,
+      "completion_tokens": 64,
+      "evidence_sections": [
+        "facilities.txt > Office Access",
+        "remote-work.txt > Working Hours and Availability",
+        "remote-work.txt > Hybrid Schedule",
+        "facilities.txt > Pantry and Shared Spaces",
+        "facilities.txt > Meeting Room Booking"
+      ],
+      "facts": [
+        [
+          "10:00 pm",
+          "10 pm",
+          "10.00 pm",
+          "10pm"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "The office closes at 10:00 pm on weekdays.",
+          "score": 0.9732
+        }
+      ],
+      "entailment_ms": 254.04
+    },
+    {
+      "id": "HP12",
+      "category": "paraphrase",
+      "question": "I found someone's umbrella in the office, where do I take it?",
+      "status": "answered",
+      "reason": null,
+      "answer": "You should hand the item to reception [1].",
+      "top_rerank_score": 0.026105914264917374,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 4649.74,
+      "generate_ms": 4099.45,
+      "prompt_tokens": 981,
+      "completion_tokens": 50,
+      "evidence_sections": [
+        "facilities.txt > Lost and Found",
+        "facilities.txt > Office Access",
+        "onboarding.txt > Before Your First Day",
+        "it-security.txt > USB Storage",
+        "it-security.txt > Phishing and Suspicious Email"
+      ],
+      "facts": [
+        [
+          "reception"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "You should hand the item to reception.",
+          "score": 0.9964
+        }
+      ],
+      "entailment_ms": 143.13
+    },
+    {
+      "id": "HP13",
+      "category": "paraphrase",
+      "question": "What daily meal allowance do I get on a business trip to Kota Kinabalu?",
+      "status": "answered",
+      "reason": null,
+      "answer": "You receive a daily meal allowance of RM 80 for travel in Sabah and Sarawak [1].",
+      "top_rerank_score": 0.9108630418777466,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 6649.38,
+      "generate_ms": 5716.8,
+      "prompt_tokens": 1056,
+      "completion_tokens": 86,
+      "evidence_sections": [
+        "travel-and-expense.txt > Daily Allowance",
+        "travel-and-expense.txt > Overseas Travel",
+        "travel-and-expense.txt > Booking Business Travel",
+        "code-of-conduct.txt > Gifts and Hospitality",
+        "travel-and-expense.txt > Mileage Claims"
+      ],
+      "facts": [
+        [
+          "RM 80",
+          "RM80"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "You receive a daily meal allowance of RM 80 for travel in Sabah and Sarawak.",
+          "score": 0.994
+        }
+      ],
+      "entailment_ms": 498.3
+    },
+    {
+      "id": "HP14",
+      "category": "paraphrase",
+      "question": "What's the most I can spend on a hotel per night for a trip within Malaysia?",
+      "status": "insufficient_evidence",
+      "reason": "no_verified_citations",
+      "answer": null,
+      "top_rerank_score": 0.9119669198989868,
+      "fact_recall": 0.0,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 1,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 5168.48,
+      "generate_ms": 4741.11,
+      "prompt_tokens": 1079,
+      "completion_tokens": 60,
+      "evidence_sections": [
+        "travel-and-expense.txt > Booking Business Travel",
+        "travel-and-expense.txt > Daily Allowance",
+        "travel-and-expense.txt > Overseas Travel",
+        "code-of-conduct.txt > Gifts and Hospitality",
+        "travel-and-expense.txt > Mileage Claims"
+      ],
+      "facts": [
+        [
+          "RM 350",
+          "RM350"
+        ]
+      ],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HP15",
+      "category": "paraphrase",
+      "question": "Do I need a receipt for a RM 15 taxi fare?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.01182339433580637,
+      "fact_recall": 0.0,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 4332.57,
+      "generate_ms": 3864.8,
+      "prompt_tokens": 1009,
+      "completion_tokens": 41,
+      "evidence_sections": [
+        "travel-and-expense.txt > Submitting Expense Claims",
+        "travel-and-expense.txt > Mileage Claims",
+        "benefits.txt > Dental Benefits",
+        "code-of-conduct.txt > Gifts and Hospitality",
+        "code-of-conduct.txt > Anti-Bribery and Corruption"
+      ],
+      "facts": [
+        [
+          "RM 20",
+          "RM20"
+        ]
+      ],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HP16",
+      "category": "paraphrase",
+      "question": "Who can approve business class for a long flight?",
+      "status": "answered",
+      "reason": null,
+      "answer": "A Director may approve business class for flights longer than six hours [1].",
+      "top_rerank_score": 0.8477157950401306,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5411.87,
+      "generate_ms": 4646.07,
+      "prompt_tokens": 1001,
+      "completion_tokens": 62,
+      "evidence_sections": [
+        "travel-and-expense.txt > Booking Business Travel",
+        "travel-and-expense.txt > Overseas Travel",
+        "travel-and-expense.txt > Submitting Expense Claims",
+        "leave-policy.txt > Unpaid Leave",
+        "travel-and-expense.txt > Non-Claimable Expenses"
+      ],
+      "facts": [
+        [
+          "Director"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "A Director may approve business class for flights longer than six hours.",
+          "score": 0.9986
+        }
+      ],
+      "entailment_ms": 268.37
+    },
+    {
+      "id": "HP17",
+      "category": "paraphrase",
+      "question": "How can I report fraud without giving my name?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Concerns about misconduct can be raised confidentially through the independent ethics hotline at 1-800-88-7788 or the online portal at speakup.teratai.example [1]. Reports may be made anonymously [1].",
+      "top_rerank_score": 0.005797401070594788,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 2,
+      "sentences_total": 2,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 8589.53,
+      "generate_ms": 7642.37,
+      "prompt_tokens": 1036,
+      "completion_tokens": 140,
+      "evidence_sections": [
+        "code-of-conduct.txt > Whistleblowing",
+        "it-security.txt > Phishing and Suspicious Email",
+        "data-protection.txt > Data Breach Response",
+        "it-security.txt > Lost or Stolen Devices",
+        "code-of-conduct.txt > Anti-Bribery and Corruption"
+      ],
+      "facts": [
+        [
+          "1-800-88-7788",
+          "speakup.teratai.example",
+          "ethics hotline"
+        ],
+        [
+          "anonymous",
+          "anonymously"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Concerns about misconduct can be raised confidentially through the independent ethics hotline at 1-800-88-7788 or the online portal at speakup.teratai.example.",
+          "score": 0.9793
+        },
+        {
+          "text": "Reports may be made anonymously.",
+          "score": 0.999
+        }
+      ],
+      "entailment_ms": 536.13
+    },
+    {
+      "id": "HP18",
+      "category": "paraphrase",
+      "question": "How long is probation for someone hired as a manager?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Managers serve a probation period of six months [1].",
+      "top_rerank_score": 0.9217811226844788,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 4615.12,
+      "generate_ms": 3949.11,
+      "prompt_tokens": 959,
+      "completion_tokens": 49,
+      "evidence_sections": [
+        "onboarding.txt > Probation Period",
+        "remote-work.txt > Eligibility",
+        "performance.txt > Performance Improvement Plan",
+        "onboarding.txt > Mandatory Training",
+        "performance.txt > Promotions"
+      ],
+      "facts": [
+        [
+          "six months",
+          "6 months"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Managers serve a probation period of six months.",
+          "score": 0.9915
+        }
+      ],
+      "entailment_ms": 239.63
+    },
+    {
+      "id": "HP19",
+      "category": "paraphrase",
+      "question": "How long do new joiners have to finish the compulsory online courses?",
+      "status": "answered",
+      "reason": null,
+      "answer": "New employees must complete mandatory e-learning modules within 30 days of joining [1].",
+      "top_rerank_score": 0.6993570923805237,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 4934.08,
+      "generate_ms": 4338.54,
+      "prompt_tokens": 1001,
+      "completion_tokens": 55,
+      "evidence_sections": [
+        "onboarding.txt > Mandatory Training",
+        "onboarding.txt > Buddy Programme",
+        "onboarding.txt > Your First Day",
+        "onboarding.txt > Payroll and Statutory Registration",
+        "onboarding.txt > Before Your First Day"
+      ],
+      "facts": [
+        [
+          "30 days"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "New employees must complete mandatory e-learning modules within 30 days of joining.",
+          "score": 0.9987
+        }
+      ],
+      "entailment_ms": 178.89
+    },
+    {
+      "id": "HP20",
+      "category": "paraphrase",
+      "question": "Which days must I be in the office on a hybrid schedule?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Tuesdays and Wednesdays are anchor days on which all team members are expected to be in the office [1].",
+      "top_rerank_score": 0.9959927201271057,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5679.79,
+      "generate_ms": 5056.24,
+      "prompt_tokens": 948,
+      "completion_tokens": 78,
+      "evidence_sections": [
+        "remote-work.txt > Hybrid Schedule",
+        "remote-work.txt > Ending a Hybrid Arrangement",
+        "remote-work.txt > Eligibility",
+        "remote-work.txt > Home Office Allowance",
+        "onboarding.txt > Before Your First Day"
+      ],
+      "facts": [
+        [
+          "Tuesday",
+          "Tuesdays"
+        ],
+        [
+          "Wednesday",
+          "Wednesdays"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Tuesdays and Wednesdays are anchor days on which all team members are expected to be in the office.",
+          "score": 0.9953
+        }
+      ],
+      "entailment_ms": 217.83
+    },
+    {
+      "id": "HP21",
+      "category": "paraphrase",
+      "question": "What is the monthly spending limit on a corporate card?",
+      "status": "answered",
+      "reason": null,
+      "answer": "The monthly limit for corporate cards is RM 10,000 [1].",
+      "top_rerank_score": 0.9742394685745239,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5636.92,
+      "generate_ms": 4879.32,
+      "prompt_tokens": 1010,
+      "completion_tokens": 64,
+      "evidence_sections": [
+        "procurement.txt > Corporate Credit Cards",
+        "travel-and-expense.txt > Submitting Expense Claims",
+        "code-of-conduct.txt > Gifts and Hospitality",
+        "travel-and-expense.txt > Mileage Claims",
+        "remote-work.txt > Home Office Allowance"
+      ],
+      "facts": [
+        [
+          "RM 10,000",
+          "RM10,000",
+          "RM 10000"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "The monthly limit for corporate cards is RM 10,000.",
+          "score": 0.9985
+        }
+      ],
+      "entailment_ms": 357.02
+    },
+    {
+      "id": "HP22",
+      "category": "paraphrase",
+      "question": "Will I get a salary increase if I'm rated 1?",
+      "status": "answered",
+      "reason": null,
+      "answer": "No, employees rated 1 do not receive an increment [1].",
+      "top_rerank_score": 0.9769787192344666,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 4977.64,
+      "generate_ms": 4307.23,
+      "prompt_tokens": 969,
+      "completion_tokens": 54,
+      "evidence_sections": [
+        "performance.txt > Salary Increments",
+        "performance.txt > Performance Improvement Plan",
+        "performance.txt > Annual Performance Appraisal",
+        "performance.txt > Promotions",
+        "onboarding.txt > Payroll and Statutory Registration"
+      ],
+      "facts": [
+        [
+          "do not receive",
+          "does not receive",
+          "not receive",
+          "no increment",
+          "not eligible"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "No, employees rated 1 do not receive an increment.",
+          "score": 0.9969
+        }
+      ],
+      "entailment_ms": 206.98
+    },
+    {
+      "id": "HP23",
+      "category": "paraphrase",
+      "question": "How long is CCTV footage kept?",
+      "status": "answered",
+      "reason": null,
+      "answer": "CCTV footage is overwritten after 30 days unless needed for an investigation [1].",
+      "top_rerank_score": 0.9610249400138855,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 6189.52,
+      "generate_ms": 5476.44,
+      "prompt_tokens": 972,
+      "completion_tokens": 82,
+      "evidence_sections": [
+        "data-protection.txt > Data Retention",
+        "facilities.txt > Lost and Found",
+        "data-protection.txt > Data Breach Response",
+        "it-security.txt > Lost or Stolen Devices",
+        "onboarding.txt > Probation Period"
+      ],
+      "facts": [
+        [
+          "30 days"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "CCTV footage is overwritten after 30 days unless needed for an investigation.",
+          "score": 0.9947
+        }
+      ],
+      "entailment_ms": 270.6
+    },
+    {
+      "id": "HP24",
+      "category": "paraphrase",
+      "question": "How long does the company have to answer my request to see my personal data?",
+      "status": "answered",
+      "reason": null,
+      "answer": "The company must respond to access requests within 21 days [1].",
+      "top_rerank_score": 0.665410578250885,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 5298.53,
+      "generate_ms": 4614.32,
+      "prompt_tokens": 970,
+      "completion_tokens": 54,
+      "evidence_sections": [
+        "data-protection.txt > Data Subject Requests",
+        "data-protection.txt > Data Breach Response",
+        "data-protection.txt > Data Retention",
+        "data-protection.txt > Personal Data We Hold",
+        "onboarding.txt > Mandatory Training"
+      ],
+      "facts": [
+        [
+          "21 days"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "The company must respond to access requests within 21 days.",
+          "score": 0.9986
+        }
+      ],
+      "entailment_ms": 201.11
+    },
+    {
+      "id": "HM01",
+      "category": "malay",
+      "question": "Berapa hari cuti paterniti untuk bapa?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Bapa mendapat 7 hari cuti paterniti yang harus diambil dalam 30 hari selepas kelahiran anak [1].",
+      "top_rerank_score": 0.2896730303764343,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 7328.19,
+      "generate_ms": 6449.01,
+      "prompt_tokens": 1067,
+      "completion_tokens": 90,
+      "evidence_sections": [
+        "leave-policy.txt > Maternity and Paternity Leave",
+        "leave-policy.txt > Emergency Leave",
+        "leave-policy.txt > Unpaid Leave",
+        "leave-policy.txt > Carry Forward",
+        "leave-policy.txt > Annual Leave"
+      ],
+      "facts": [
+        [
+          "7",
+          "tujuh"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Bapa mendapat 7 hari cuti paterniti yang harus diambil dalam 30 hari selepas kelahiran anak.",
+          "score": 0.9105
+        }
+      ],
+      "entailment_ms": 352.54
+    },
+    {
+      "id": "HM02",
+      "category": "malay",
+      "question": "Berapakah elaun kesejahteraan setahun?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Elaun kesejahteraan tahunan ialah RM 600 [1].",
+      "top_rerank_score": 0.005119676236063242,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 6798.17,
+      "generate_ms": 5852.54,
+      "prompt_tokens": 997,
+      "completion_tokens": 77,
+      "evidence_sections": [
+        "benefits.txt > Wellness Allowance",
+        "benefits.txt > Optical Benefits",
+        "travel-and-expense.txt > Daily Allowance",
+        "leave-policy.txt > Annual Leave",
+        "performance.txt > Promotions"
+      ],
+      "facts": [
+        [
+          "RM 600",
+          "RM600"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Elaun kesejahteraan tahunan ialah RM 600.",
+          "score": 0.9937
+        }
+      ],
+      "entailment_ms": 427.23
+    },
+    {
+      "id": "HM03",
+      "category": "malay",
+      "question": "Bilakah kenaikan gaji tahunan berkuat kuasa?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Kenaikan gaji tahunan berkuat kuasa pada 1 April [1].",
+      "top_rerank_score": 0.521379828453064,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 7091.68,
+      "generate_ms": 6290.91,
+      "prompt_tokens": 1005,
+      "completion_tokens": 76,
+      "evidence_sections": [
+        "performance.txt > Salary Increments",
+        "performance.txt > Promotions",
+        "onboarding.txt > Payroll and Statutory Registration",
+        "leave-policy.txt > Carry Forward",
+        "leave-policy.txt > Annual Leave"
+      ],
+      "facts": [
+        [
+          "1 April"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Kenaikan gaji tahunan berkuat kuasa pada 1 April.",
+          "score": 0.9952
+        }
+      ],
+      "entailment_ms": 214.4
+    },
+    {
+      "id": "HM04",
+      "category": "malay",
+      "question": "Berapa lama barang yang hilang disimpan di kaunter penyambut tetamu?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.025662705302238464,
+      "fact_recall": 0.0,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 4873.76,
+      "generate_ms": 4254.39,
+      "prompt_tokens": 992,
+      "completion_tokens": 26,
+      "evidence_sections": [
+        "facilities.txt > Lost and Found",
+        "code-of-conduct.txt > Gifts and Hospitality",
+        "it-security.txt > Lost or Stolen Devices",
+        "data-protection.txt > Data Retention",
+        "facilities.txt > Pantry and Shared Spaces"
+      ],
+      "facts": [
+        [
+          "30"
+        ]
+      ],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HM05",
+      "category": "malay",
+      "question": "Berapa hari cuti ihsan jika ibu bapa meninggal dunia?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.05429893732070923,
+      "fact_recall": 0.0,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 4886.17,
+      "generate_ms": 4340.93,
+      "prompt_tokens": 1027,
+      "completion_tokens": 26,
+      "evidence_sections": [
+        "leave-policy.txt > Emergency Leave",
+        "leave-policy.txt > Maternity and Paternity Leave",
+        "leave-policy.txt > Unpaid Leave",
+        "leave-policy.txt > Medical Leave",
+        "leave-policy.txt > Carry Forward"
+      ],
+      "facts": [
+        [
+          "3",
+          "tiga"
+        ]
+      ],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HM06",
+      "category": "malay",
+      "question": "Berapa lama notis untuk menamatkan susunan kerja hibrid?",
+      "status": "answered",
+      "reason": null,
+      "answer": "Notis adalah 30 hari jika oleh pekerja atau pengurus, tetapi boleh ditarik segera jika peraturan keselamatan dilanggar atau prestasi di bawah harapan [1].",
+      "top_rerank_score": 0.9678385257720947,
+      "fact_recall": 1.0,
+      "citations": 1,
+      "citations_on_relevant": 1,
+      "citations_proposed": 2,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 8871.77,
+      "generate_ms": 8082.93,
+      "prompt_tokens": 936,
+      "completion_tokens": 140,
+      "evidence_sections": [
+        "remote-work.txt > Ending a Hybrid Arrangement",
+        "remote-work.txt > Hybrid Schedule",
+        "onboarding.txt > Probation Period",
+        "remote-work.txt > Eligibility",
+        "remote-work.txt > Home Office Allowance"
+      ],
+      "facts": [
+        [
+          "30"
+        ]
+      ],
+      "entailment": [
+        {
+          "text": "Notis adalah 30 hari jika oleh pekerja atau pengurus, tetapi boleh ditarik segera jika peraturan keselamatan dilanggar atau prestasi di bawah harapan.",
+          "score": 0.9857
+        }
+      ],
+      "entailment_ms": 276.96
+    },
+    {
+      "id": "HU01",
+      "category": "unanswerable",
+      "question": "How many days of paternity leave do fathers get when adopting a child?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.6574284434318542,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 5243.93,
+      "generate_ms": 4528.96,
+      "prompt_tokens": 1071,
+      "completion_tokens": 18,
+      "evidence_sections": [
+        "leave-policy.txt > Maternity and Paternity Leave",
+        "leave-policy.txt > Emergency Leave",
+        "leave-policy.txt > Carry Forward",
+        "leave-policy.txt > Unpaid Leave",
+        "leave-policy.txt > Annual Leave"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU02",
+      "category": "unanswerable",
+      "question": "What is the hotel limit per night for a business trip to Singapore?",
+      "status": "answered",
+      "reason": null,
+      "answer": "The hotel limit per night for a business trip within Malaysia is RM 350 [1].",
+      "top_rerank_score": 0.04092229902744293,
+      "fact_recall": null,
+      "citations": 1,
+      "citations_on_relevant": 0,
+      "citations_proposed": 1,
+      "sentences_total": 1,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": true,
+      "latency_ms": 6848.92,
+      "generate_ms": 5808.45,
+      "prompt_tokens": 1026,
+      "completion_tokens": 65,
+      "evidence_sections": [
+        "travel-and-expense.txt > Booking Business Travel",
+        "travel-and-expense.txt > Overseas Travel",
+        "procurement.txt > Corporate Credit Cards",
+        "travel-and-expense.txt > Mileage Claims",
+        "travel-and-expense.txt > Daily Allowance"
+      ],
+      "facts": [],
+      "entailment": [
+        {
+          "text": "The hotel limit per night for a business trip within Malaysia is RM 350.",
+          "score": 0.9816
+        }
+      ],
+      "entailment_ms": 361.65
+    },
+    {
+      "id": "HU03",
+      "category": "unanswerable",
+      "question": "What mileage rate can I claim for using my motorcycle?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.06325051933526993,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 5343.23,
+      "generate_ms": 4701.23,
+      "prompt_tokens": 979,
+      "completion_tokens": 32,
+      "evidence_sections": [
+        "travel-and-expense.txt > Mileage Claims",
+        "travel-and-expense.txt > Submitting Expense Claims",
+        "travel-and-expense.txt > Non-Claimable Expenses",
+        "benefits.txt > Optical Benefits",
+        "travel-and-expense.txt > Overseas Travel"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU04",
+      "category": "unanswerable",
+      "question": "How long is the probation period for interns?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.8171371221542358,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 4865.47,
+      "generate_ms": 4385.96,
+      "prompt_tokens": 965,
+      "completion_tokens": 33,
+      "evidence_sections": [
+        "onboarding.txt > Probation Period",
+        "remote-work.txt > Eligibility",
+        "onboarding.txt > Buddy Programme",
+        "onboarding.txt > Mandatory Training",
+        "performance.txt > Performance Improvement Plan"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU05",
+      "category": "unanswerable",
+      "question": "What is the notice period after my probation is confirmed?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.933552086353302,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 5253.89,
+      "generate_ms": 4692.55,
+      "prompt_tokens": 996,
+      "completion_tokens": 34,
+      "evidence_sections": [
+        "onboarding.txt > Probation Period",
+        "remote-work.txt > Eligibility",
+        "leave-policy.txt > Maternity and Paternity Leave",
+        "remote-work.txt > Ending a Hybrid Arrangement",
+        "leave-policy.txt > Medical Leave"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU06",
+      "category": "unanswerable",
+      "question": "Berapa hari cuti perkahwinan yang diberikan?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.001507048960775137,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 5408.11,
+      "generate_ms": 4833.87,
+      "prompt_tokens": 1057,
+      "completion_tokens": 26,
+      "evidence_sections": [
+        "leave-policy.txt > Emergency Leave",
+        "leave-policy.txt > Maternity and Paternity Leave",
+        "leave-policy.txt > Unpaid Leave",
+        "leave-policy.txt > Medical Leave",
+        "leave-policy.txt > Carry Forward"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU07",
+      "category": "unanswerable",
+      "question": "Does the company offer a housing loan subsidy?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.000656372809316963,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 5113.07,
+      "generate_ms": 4438.67,
+      "prompt_tokens": 998,
+      "completion_tokens": 31,
+      "evidence_sections": [
+        "benefits.txt > Employee Assistance Programme",
+        "benefits.txt > Professional Certification Sponsorship",
+        "travel-and-expense.txt > Daily Allowance",
+        "remote-work.txt > Home Office Allowance",
+        "benefits.txt > Medical Insurance"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU08",
+      "category": "unanswerable",
+      "question": "How many days of study leave can I take before a certification exam?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.004609572235494852,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 5007.04,
+      "generate_ms": 4429.36,
+      "prompt_tokens": 1080,
+      "completion_tokens": 18,
+      "evidence_sections": [
+        "leave-policy.txt > Medical Leave",
+        "leave-policy.txt > Carry Forward",
+        "leave-policy.txt > Unpaid Leave",
+        "leave-policy.txt > Annual Leave",
+        "leave-policy.txt > Emergency Leave"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU09",
+      "category": "unanswerable",
+      "question": "What is the guest Wi-Fi password?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.0022430878598243,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 4845.22,
+      "generate_ms": 4213.84,
+      "prompt_tokens": 1008,
+      "completion_tokens": 18,
+      "evidence_sections": [
+        "remote-work.txt > Security When Working Remotely",
+        "it-security.txt > Password Requirements",
+        "it-security.txt > Multi-Factor Authentication",
+        "it-security.txt > VPN Access",
+        "it-security.txt > Lost or Stolen Devices"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    },
+    {
+      "id": "HU10",
+      "category": "unanswerable",
+      "question": "How much is the employer's EPF contribution rate?",
+      "status": "insufficient_evidence",
+      "reason": "model_declined",
+      "answer": null,
+      "top_rerank_score": 0.0030994154512882233,
+      "fact_recall": null,
+      "citations": 0,
+      "citations_on_relevant": 0,
+      "citations_proposed": 0,
+      "sentences_total": 0,
+      "sentences_removed": 0,
+      "rejected": [],
+      "answered": false,
+      "latency_ms": 4170.52,
+      "generate_ms": 3623.51,
+      "prompt_tokens": 966,
+      "completion_tokens": 18,
+      "evidence_sections": [
+        "leave-policy.txt > Unpaid Leave",
+        "onboarding.txt > Payroll and Statutory Registration",
+        "onboarding.txt > Before Your First Day",
+        "benefits.txt > Optical Benefits",
+        "remote-work.txt > Home Office Allowance"
+      ],
+      "facts": [],
+      "entailment": null,
+      "entailment_ms": null
+    }
+  ]
+}

@@ -9,6 +9,7 @@ These are **starting choices**, not final answers. The embedding model is wired 
 | Embeddings | `Qwen/Qwen3-Embedding-0.6B` | ~1.2 GB | Apache-2.0, multilingual (English + Malay docs are common in Malaysian companies), 32K context, instruction-aware queries | `BAAI/bge-m3` (MIT, 8K ctx) for the Phase 7 comparison |
 | Reranker | `BAAI/bge-reranker-v2-m3` | ~1.1 GB | A true cross-encoder (matches the spec), MIT, multilingual, strong BEIR results for its size | `cross-encoder/ms-marco-MiniLM-L-6-v2` (~90 MB, English-only) for CI and a speed baseline |
 | LLM (Ollama) | `qwen3.5:4b` | ~3.3–4 GB download | Leaves headroom for the other two models plus VS Code and a browser | `qwen3.5:9b` (~6.6 GB) for better answers when other apps are closed; `gemma4:e4b` as an alternative family |
+| Entailment (NLI, Phase 7) | `MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7` | ~1.1 GB (float32) | MIT, ~280M parameters, NLI in 100+ languages (Malay answers over English documents); float32 because DeBERTa-v3 overflows in float16 | `EKA_ENTAILMENT_BACKEND=lexical` (offline, not semantic) for tests and CI |
 
 All three run on Apple-silicon GPU: sentence-transformers via PyTorch **MPS**, Ollama via Metal.
 
@@ -19,8 +20,9 @@ All three run on Apple-silicon GPU: sentence-transformers via PyTorch **MPS**, O
 | macOS + VS Code + browser | ~5–6 GB | ~5–6 GB |
 | Embedding model | ~1.2 GB | ~1.2 GB |
 | Reranker (float16 on MPS) | ~1.1 GB | ~1.1 GB |
+| Entailment model (float32) | ~1.1 GB | ~1.1 GB |
 | LLM weights + 8K-token KV cache | ~4.5–5 GB | ~7.5–8.5 GB |
-| **Total** | **~12–13 GB** ✅ | **~15–17 GB** ⚠️ tight; close other apps |
+| **Total** | **~13–14 GB** ✅ | **~16–18 GB** ⚠️ tight; close other apps or set `EKA_ENTAILMENT_BACKEND=none` |
 
 ## Settings that matter on this machine
 

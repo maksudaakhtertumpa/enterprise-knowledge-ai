@@ -1,0 +1,86 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='720' height='380' viewBox='0 0 720 380' role='img' aria-labelledby='t d'>
+<title id='t'>Entailment threshold trade-off (development set)</title><desc id='d'>Answer rate: 0→96.7%, 0.05→90.0%, 0.1→90.0%, 0.2→90.0%, 0.3→90.0%, 0.4→90.0%, 0.5→90.0%, 0.6→90.0%, 0.7→90.0%, 0.8→90.0%, 0.9→86.7%; Fact recall: 0→85.0%, 0.05→81.7%, 0.1→81.7%, 0.2→81.7%, 0.3→81.7%, 0.4→81.7%, 0.5→81.7%, 0.6→81.7%, 0.7→81.7%, 0.8→81.7%, 0.9→78.3%; Correct refusals: 0→91.7%, 0.05→91.7%, 0.1→91.7%, 0.2→91.7%, 0.3→91.7%, 0.4→91.7%, 0.5→91.7%, 0.6→91.7%, 0.7→100.0%, 0.8→100.0%, 0.9→100.0%; Sentences removed: 0→0.0%, 0.05→4.9%, 0.1→4.9%, 0.2→4.9%, 0.3→4.9%, 0.4→4.9%, 0.5→4.9%, 0.6→7.3%, 0.7→9.8%, 0.8→9.8%, 0.9→12.2%</desc>
+<rect width='720' height='380' fill='#ffffff'/>
+<text x='16.0' y='26.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='16' fill='#1f2328' text-anchor='start' font-weight='600' >Entailment threshold trade-off (development set)</text>
+<text x='16.0' y='46.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#59636e' text-anchor='start' font-weight='normal' >Removing sentences with P(entailment) below the threshold · MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7</text>
+<circle cx='70.0' cy='64.0' r='4' fill='#0072B2'/>
+<text x='82.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >Answer rate</text>
+<rect x='173.0' y='60.0' width='8' height='8' fill='#E69F00'/>
+<text x='189.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >Fact recall</text>
+<path d='M284.0 59.0 L289.0 68.0 L279.0 68.0 Z' fill='#009E73'/>
+<text x='296.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >Correct refusals</text>
+<circle cx='426.0' cy='64.0' r='4' fill='#CC79A7'/>
+<text x='438.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >Sentences removed</text>
+<line x1='64' x2='696' y1='316.0' y2='316.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='320.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >0%</text>
+<line x1='64' x2='696' y1='258.0' y2='258.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='262.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >25%</text>
+<line x1='64' x2='696' y1='200.0' y2='200.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='204.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >50%</text>
+<line x1='64' x2='696' y1='142.0' y2='142.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='146.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >75%</text>
+<line x1='64' x2='696' y1='84.0' y2='84.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='88.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >100%</text>
+<text x='64.0' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0</text>
+<text x='99.1' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.05</text>
+<text x='134.2' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.1</text>
+<text x='204.4' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.2</text>
+<text x='274.7' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.3</text>
+<text x='344.9' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.4</text>
+<text x='415.1' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.5</text>
+<text x='485.3' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.6</text>
+<text x='555.6' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.7</text>
+<text x='625.8' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.8</text>
+<text x='696.0' y='334.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='middle' font-weight='normal' >0.9</text>
+<text x='380.0' y='366.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#59636e' text-anchor='middle' font-weight='normal' >EKA_ANSWER_ENTAILMENT_THRESHOLD</text>
+<line x1='415.1' x2='415.1' y1='84' y2='316' stroke='#59636e' stroke-dasharray='4 4'/>
+<text x='421.1' y='96.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='start' font-weight='normal' >configured 0.5</text>
+<path d='M64.0 91.7 L99.1 107.2 L134.2 107.2 L204.4 107.2 L274.7 107.2 L344.9 107.2 L415.1 107.2 L485.3 107.2 L555.6 107.2 L625.8 107.2 L696.0 114.9' fill='none' stroke='#0072B2' stroke-width='2'/>
+<circle cx='64.0' cy='91.7' r='4' fill='#0072B2'/>
+<circle cx='99.1' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='134.2' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='204.4' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='274.7' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='344.9' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='415.1' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='485.3' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='555.6' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='625.8' cy='107.2' r='4' fill='#0072B2'/>
+<circle cx='696.0' cy='114.9' r='4' fill='#0072B2'/>
+<path d='M64.0 118.8 L99.1 126.5 L134.2 126.5 L204.4 126.5 L274.7 126.5 L344.9 126.5 L415.1 126.5 L485.3 126.5 L555.6 126.5 L625.8 126.5 L696.0 134.3' fill='none' stroke='#E69F00' stroke-width='2'/>
+<rect x='60.0' y='114.8' width='8' height='8' fill='#E69F00'/>
+<rect x='95.1' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='130.2' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='200.4' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='270.7' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='340.9' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='411.1' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='481.3' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='551.6' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='621.8' y='122.5' width='8' height='8' fill='#E69F00'/>
+<rect x='692.0' y='130.3' width='8' height='8' fill='#E69F00'/>
+<path d='M64.0 103.3 L99.1 103.3 L134.2 103.3 L204.4 103.3 L274.7 103.3 L344.9 103.3 L415.1 103.3 L485.3 103.3 L555.6 84.0 L625.8 84.0 L696.0 84.0' fill='none' stroke='#009E73' stroke-width='2'/>
+<path d='M64.0 98.3 L69.0 107.3 L59.0 107.3 Z' fill='#009E73'/>
+<path d='M99.1 98.3 L104.1 107.3 L94.1 107.3 Z' fill='#009E73'/>
+<path d='M134.2 98.3 L139.2 107.3 L129.2 107.3 Z' fill='#009E73'/>
+<path d='M204.4 98.3 L209.4 107.3 L199.4 107.3 Z' fill='#009E73'/>
+<path d='M274.7 98.3 L279.7 107.3 L269.7 107.3 Z' fill='#009E73'/>
+<path d='M344.9 98.3 L349.9 107.3 L339.9 107.3 Z' fill='#009E73'/>
+<path d='M415.1 98.3 L420.1 107.3 L410.1 107.3 Z' fill='#009E73'/>
+<path d='M485.3 98.3 L490.3 107.3 L480.3 107.3 Z' fill='#009E73'/>
+<path d='M555.6 79.0 L560.6 88.0 L550.6 88.0 Z' fill='#009E73'/>
+<path d='M625.8 79.0 L630.8 88.0 L620.8 88.0 Z' fill='#009E73'/>
+<path d='M696.0 79.0 L701.0 88.0 L691.0 88.0 Z' fill='#009E73'/>
+<path d='M64.0 316.0 L99.1 304.7 L134.2 304.7 L204.4 304.7 L274.7 304.7 L344.9 304.7 L415.1 304.7 L485.3 299.0 L555.6 293.4 L625.8 293.4 L696.0 287.7' fill='none' stroke='#CC79A7' stroke-width='2'/>
+<circle cx='64.0' cy='316.0' r='4' fill='#CC79A7'/>
+<circle cx='99.1' cy='304.7' r='4' fill='#CC79A7'/>
+<circle cx='134.2' cy='304.7' r='4' fill='#CC79A7'/>
+<circle cx='204.4' cy='304.7' r='4' fill='#CC79A7'/>
+<circle cx='274.7' cy='304.7' r='4' fill='#CC79A7'/>
+<circle cx='344.9' cy='304.7' r='4' fill='#CC79A7'/>
+<circle cx='415.1' cy='304.7' r='4' fill='#CC79A7'/>
+<circle cx='485.3' cy='299.0' r='4' fill='#CC79A7'/>
+<circle cx='555.6' cy='293.4' r='4' fill='#CC79A7'/>
+<circle cx='625.8' cy='293.4' r='4' fill='#CC79A7'/>
+<circle cx='696.0' cy='287.7' r='4' fill='#CC79A7'/>
+</svg>

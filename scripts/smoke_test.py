@@ -97,6 +97,8 @@ def main() -> int:
         env["EKA_RERANKER_BACKEND"] = "hashing" if args.backend == "hashing" else "cross-encoder"
         # Offline run -> extractive stand-in; real run -> Ollama.
         env["EKA_LLM_BACKEND"] = "extractive" if args.backend == "hashing" else "ollama"
+        # Offline run -> lexical entailment stand-in; real run -> NLI model.
+        env["EKA_ENTAILMENT_BACKEND"] = "lexical" if args.backend == "hashing" else "nli"
     port = free_port()
     base = f"http://127.0.0.1:{port}"
 

@@ -27,6 +27,7 @@ def run_app_once(data_dir: Path) -> None:
         data_dir=data_dir,
         embedding_backend="hashing",
         reranker_backend="hashing",
+        entailment_backend="lexical",
         llm_backend="extractive",
         log_json=False,
         _env_file=None,

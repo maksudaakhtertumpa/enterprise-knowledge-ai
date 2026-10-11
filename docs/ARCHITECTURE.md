@@ -1,6 +1,6 @@
 # Architecture & Plan
 
-Status: **Phases 1–6 complete**, verified on a MacBook Air M4. Budget: **$0** (local models only). Everything marked *(planned)* below is design, not code yet.
+Status: **Phases 1–7 complete**, verified on a MacBook Air M4. Budget: **$0** (local models only). Everything marked *(planned)* below is design, not code yet.
 
 ## 1. System architecture
 
@@ -30,6 +30,8 @@ flowchart LR
         QA --> RET
         QA --> LLM[Local LLM via Ollama]
         LLM --> CV[Citation verifier]
+        CV --> NLI[Entailment check: local NLI model]
+        API --> RL[Rate limits + security headers]
     end
 
     EVAL[Evaluation harness] --> RET
@@ -43,6 +45,9 @@ flowchart LR
 4. *(Original plan: BM25 + dense fused with RRF, then rerank. The M4 benchmark showed dense + rerank is equal or better and simpler.)*
 5. The local LLM (Ollama) sees passages fenced with a per-request random nonce as untrusted *data*, and must reply in JSON with `[n]` markers and an exact quote per cited passage.
 6. The verifier checks every citation: the passage was actually shown, and the quote occurs in it (numbers and negations must match exactly). Sentences without a verified citation are removed; if nothing survives, the API returns `insufficient_evidence` rather than an unsupported answer. Source names and pages come from the database, never from the model.
+7. A local NLI model (mDeBERTa-v3, multilingual) scores whether each remaining sentence *follows from* the passages it cites. Below the threshold the sentence is removed (or flagged, `EKA_ANSWER_ENTAILMENT_MODE=flag`). A real quote attached to a different claim no longer passes.
+
+Before any of this, the request passes the auth-failure limiter (per client address) and the workspace's token bucket for `ask`; responses carry security headers. See [SECURITY.md](SECURITY.md).
 
 ## 2. Key design decisions
 
@@ -50,14 +55,16 @@ flowchart LR
 |---|---|---|---|
 | BM25 engine | SQLite **FTS5** (`bm25()` ranking), **one table per workspace** | Persistent, zero extra deps; per-tenant tables give isolation by construction *and* correct per-tenant BM25 statistics (a shared table leaks term statistics across tenants); `rank_bm25` is in-memory and unmaintained | Postgres `tsvector` / OpenSearch |
 | Workspace isolation in vectors | **One Chroma collection per workspace** | Isolation by construction, not by remembering a metadata filter on every query | Qdrant with payload-indexed tenants |
-| Auth (MVP) | Per-workspace **API keys**, stored hashed | Real authorization from Phase 2, small surface | JWT users + roles (Phase 7) |
+| Auth (MVP) | Per-workspace **API keys**, stored hashed | Real authorization from Phase 2, small surface | OIDC users + roles |
+| Rate limiting | In-process **token buckets** per workspace (ask, search, ingest) and per client address (failed keys) | No extra service; correct for one process | Redis-backed limiter for several workers |
+| Faithfulness check | Local **NLI cross-encoder** per answer sentence, after citation verification | Catches true quotes attached to wrong claims; multilingual; $0 | Larger NLI model or an LLM judge, if measured to help |
 | Background ingestion | FastAPI `BackgroundTasks` + status column | No broker to run; status polling is enough for a single node | Celery/RQ or SQS worker |
 | UI ↔ data | Next.js server proxies an **allowlist** of API calls; key in a sealed httpOnly cookie | Browser never holds the key; clean API boundary; CORS off | Per-user login (OIDC) instead of workspace keys |
 | LLM access | `LLMClient` interface; **Ollama only** ($0 rule) + offline extractive stand-in | Local, free, private; stand-in keeps CI model-free | Any provider can implement the interface |
 | Config | `pydantic-settings`, `EKA_` prefix | Typed, validated, fails fast at boot | AWS SSM / Secrets Manager |
 | Logging | Std-lib JSON + request ID | No dependency, greppable, CloudWatch-friendly | OpenTelemetry |
 
-Starting model choices for the MacBook M4 (16 GB) are in [MODELS.md](MODELS.md); Phase 7 confirms or replaces them using measured results.
+Model choices for the MacBook M4 (16 GB) are in [MODELS.md](MODELS.md). Measured results, development and held-out, are in [evaluation/](evaluation/README.md).
 
 ## 3. MVP scope
 
@@ -74,7 +81,8 @@ enterprise-knowledge-ai/
 ├── app/
 │   ├── main.py                 # app factory
 │   ├── core/                   # config, logging, errors, middleware   ✅
-│   │   └── security.py         # API-key auth, workspace scope         ✅
+│   │   ├── security.py         # API-key auth, workspace scope         ✅
+│   │   └── ratelimit.py        # token buckets, client address         ✅
 │   ├── api/routes/
 │   │   ├── health.py           #                                       ✅
 │   │   ├── workspace.py        #                                       ✅
@@ -91,16 +99,16 @@ enterprise-knowledge-ai/
 │       ├── ingestion/          # validation, extractors, chunker       ✅
 │       ├── container.py        # service wiring (DI)                   ✅
 │       ├── retrieval/          # embeddings, FTS5, Chroma, RRF, rerank ✅
-│       ├── generation/         # Ollama client, prompts, verifier      ✅
+│       ├── generation/         # Ollama client, prompts, verifier, NLI ✅
 ├── web/                        # Next.js + Tailwind + shadcn/ui          ✅
 │   ├── src/app/                # pages; api/session, api/eka proxy, api/health
 │   ├── src/components/         # answer view, sources, ui/ (shadcn)
 │   ├── src/lib/                # format helpers, client; server/ session + proxy
 │   └── e2e/                    # Playwright tests against the real API
-├── eval/                       # dataset, metrics, runner, results     ✅ (expanded P7)
+├── eval/                       # datasets (dev + held-out), runners, SVG report ✅
 ├── scripts/                    # verify.sh, smoke_test.py              ✅
 ├── tests/                      # unit + API tests                      ✅
-├── docs/                       # architecture, API, eval report, ADRs
+├── docs/                       # architecture, SECURITY.md, evaluation/, phases/
 ├── docker/ + docker-compose.yml#                                       (planned P8)
 ├── .github/workflows/ci.yml    #                                       ✅
 ├── pyproject.toml, requirements*.lock, Makefile, .env.example         ✅
@@ -118,7 +126,7 @@ Target: a demo-able MVP **by early December** so it is on your CV while applicat
 | 5 | 9–15 Nov | 4 Rerank + fusion tuning ✅ | dense + rerank 10 by default (MRR 0.962), chosen from measurements |
 | 6–7 | 16–29 Nov | 5 Grounded QA ✅ | Answers with verified citations; injection test docs don't change behaviour |
 | 8 | 30 Nov–6 Dec | 6 Web UI, Next.js ✅ | **MVP demo** — record screenshots/GIF |
-| 9–10 | 7–20 Dec | 7 Eval + hardening | Real metrics table + charts; rate limiting; security tests |
+| 9–10 | 7–20 Dec | 7 Eval + hardening ✅ | Held-out set, charts, entailment check, rate limits, security headers, dependency audit |
 | 11–12 | 21 Dec–3 Jan | 8 Docker + AWS | `docker compose up` works; deployed once, costs documented |
 | 13+ | Jan | Polish | README, demo video, interview notes |
 

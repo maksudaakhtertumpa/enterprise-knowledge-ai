@@ -33,6 +33,7 @@ def test_readiness_503_when_data_dir_unusable(tmp_path) -> None:
         data_dir=blocker / "data",
         embedding_backend="hashing",
         reranker_backend="hashing",
+        entailment_backend="lexical",
         llm_backend="extractive",
         _env_file=None,
     )

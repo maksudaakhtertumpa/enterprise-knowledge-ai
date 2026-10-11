@@ -112,6 +112,16 @@ export interface Verification {
   sentences_total: number;
   sentences_removed: number;
   rejected: RejectedCitation[];
+  entailment?: Entailment | null;
+}
+
+export interface Entailment {
+  model: string;
+  mode: "remove" | "flag";
+  threshold: number;
+  sentences_removed: number;
+  sentences_flagged: number;
+  sentences: { text: string; score: number; supported: boolean }[];
 }
 
 export interface AskResponse {

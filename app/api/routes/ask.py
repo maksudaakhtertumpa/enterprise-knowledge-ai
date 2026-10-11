@@ -15,18 +15,20 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError, NotFoundError
-from app.core.security import WorkspaceContext, get_workspace
+from app.core.security import WorkspaceContext, get_workspace, rate_limited
 from app.db.models import Chunk, Document, DocumentStatus, QuestionLog
 from app.db.session import get_db
 from app.schemas.ask import (
     AskRequest,
     AskResponse,
     Citation,
+    EntailmentOut,
     EvidenceContext,
     EvidenceOut,
     HistoryItem,
     HistoryList,
     RejectedCitationOut,
+    SentenceCheckOut,
     SourceRef,
     Usage,
     VerificationOut,
@@ -93,6 +95,20 @@ def _to_response(question: str, outcome: AnswerOutcome, backend: str | None) -> 
                     source=_source(e.hit.document, e.hit.chunk),
                 )
             )
+    entailment = None
+    if outcome.entailment is not None:
+        ent = outcome.entailment
+        entailment = EntailmentOut(
+            model=ent.model,
+            mode=ent.mode,
+            threshold=ent.threshold,
+            sentences_removed=ent.removed,
+            sentences_flagged=ent.flagged,
+            sentences=[
+                SentenceCheckOut(text=c.text, score=c.score, supported=c.supported)
+                for c in ent.sentences
+            ],
+        )
     verification = None
     if outcome.verification is not None:
         v = outcome.verification
@@ -105,6 +121,7 @@ def _to_response(question: str, outcome: AnswerOutcome, backend: str | None) -> 
                 RejectedCitationOut(marker=r.passage, quote=r.quote[:300], reason=r.reason)
                 for r in v.rejected
             ],
+            entailment=entailment,
         )
     return AskResponse(
         question=question,
@@ -152,12 +169,13 @@ def _to_response(question: str, outcome: AnswerOutcome, backend: str | None) -> 
         409: {"model": ErrorResponse, "description": "Vectors built with a different model"},
         503: {"model": ErrorResponse, "description": "LLM not running, model missing, or disabled"},
         504: {"model": ErrorResponse, "description": "The LLM timed out"},
+        429: {"model": ErrorResponse, "description": "Rate limit reached; see Retry-After"},
     },
 )
 def ask(
     body: AskRequest,
     request: Request,
-    workspace: Workspace,
+    workspace: Annotated[WorkspaceContext, Depends(rate_limited("ask"))],
     db: DB,
     settings: AppSettings,
 ) -> AskResponse:
@@ -172,7 +190,14 @@ def ask(
         reranker=services.reranker,
         rerank_candidates=settings.rerank_candidates,
     )
-    service = AnswerService(db, settings, search, services.llm, services.embedder.count_tokens)
+    service = AnswerService(
+        db,
+        settings,
+        search,
+        services.llm,
+        services.embedder.count_tokens,
+        entailment=services.entailment,
+    )
     try:
         outcome = service.answer(
             workspace.id,

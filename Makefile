@@ -1,7 +1,7 @@
 # Shortcuts for macOS/Linux/WSL. On Windows PowerShell, run the commands
 # shown on each line directly (see README "Common commands").
 
-.PHONY: install install-ml run web-install web dev web-check e2e test cov lint format check lock smoke bench sweep answers verify
+.PHONY: install install-ml run web-install web dev web-check e2e test cov lint format check lock smoke bench sweep answers heldout report audit verify
 
 install:            ## App + dev tools (offline hashing embedder only)
 	pip install -r requirements-dev.lock && pip install -e . --no-deps
@@ -10,7 +10,7 @@ install-ml:         ## App + dev tools + PyTorch / sentence-transformers (real e
 	pip install -r requirements-ml.lock && pip install -e . --no-deps
 
 run:                ## Start the API with auto-reload on http://localhost:8000
-	uvicorn app.main:app --reload --port 8000
+	uvicorn app.main:app --reload --port 8000 --no-server-header
 
 web-install:        ## Web UI dependencies (needs Node.js 20.9+; exact versions from package-lock.json)
 	cd web && npm ci --no-fund --no-audit
@@ -57,8 +57,22 @@ sweep:              ## Try 36 hybrid fusion settings on one ingested corpus
 answers:            ## Answer benchmark: grounded Q&A, refusals, injection (needs Ollama)
 	python -m eval.run_answers
 
+heldout:            ## Held-out set: retrieval + answers on questions never used for tuning
+	python -m eval.run_retrieval --dataset eval/datasets/teratai-heldout
+	python -m eval.run_answers --dataset eval/datasets/teratai-heldout --no-injection
+
+report:             ## Charts + docs/evaluation/README.md from the saved benchmark runs
+	python -m eval.report
+
 verify:             ## Everything above, in order
 	./scripts/verify.sh
+
+audit:              ## Known-vulnerability scan of pinned Python and web dependencies
+	python -m pip install -q pip-audit==2.10.1
+	python -m pip_audit --strict --no-deps --disable-pip -r requirements-ml.lock \
+		--ignore-vuln PYSEC-2026-311 --ignore-vuln PYSEC-2026-3813 \
+		--ignore-vuln PYSEC-2026-3814 --ignore-vuln PYSEC-2026-3815
+	cd web && npm audit --omit=dev --audit-level=high
 
 lock:               ## Re-pin dependencies (needs uv: pip install uv)
 	uv pip compile --universal pyproject.toml --python-version 3.11 -o requirements.lock

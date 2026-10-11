@@ -1,0 +1,60 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='720' height='360' viewBox='0 0 720 360' role='img' aria-labelledby='t d'>
+<title id='t'>Retrieval MRR by question type (held-out set)</title><desc id='d'>lexical: bm25 1.00, dense 1.00, hybrid 1.00, dense+rerank 1.00, hybrid+rerank 1.00; paraphrase: bm25 0.88, dense 0.98, hybrid 0.96, dense+rerank 1.00, hybrid+rerank 1.00; malay: bm25 0.17, dense 0.83, hybrid 0.83, dense+rerank 1.00, hybrid+rerank 1.00</desc>
+<rect width='720' height='360' fill='#ffffff'/>
+<text x='16.0' y='26.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='16' fill='#1f2328' text-anchor='start' font-weight='600' >Retrieval MRR by question type (held-out set)</text>
+<text x='16.0' y='46.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#59636e' text-anchor='start' font-weight='normal' >Keyword queries favour BM25; paraphrases and Malay need dense retrieval</text>
+<rect x='64' y='58' width='12' height='12' fill='#0072B2'/>
+<text x='82.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >bm25</text>
+<rect x='122' y='58' width='12' height='12' fill='#E69F00'/>
+<text x='140.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >dense</text>
+<rect x='187' y='58' width='12' height='12' fill='#009E73'/>
+<text x='205.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >hybrid</text>
+<rect x='259' y='58' width='12' height='12' fill='#CC79A7'/>
+<text x='277.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >dense+rerank</text>
+<rect x='373' y='58' width='12' height='12' fill='#56B4E9'/>
+<text x='391.0' y='68.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='start' font-weight='normal' >hybrid+rerank</text>
+<line x1='64' x2='704' y1='304.0' y2='304.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='308.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >0</text>
+<line x1='64' x2='704' y1='249.0' y2='249.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='253.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >0.25</text>
+<line x1='64' x2='704' y1='194.0' y2='194.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='198.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >0.5</text>
+<line x1='64' x2='704' y1='139.0' y2='139.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='143.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >0.75</text>
+<line x1='64' x2='704' y1='84.0' y2='84.0' stroke='#d1d9e0' stroke-width='1'/>
+<text x='56.0' y='88.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='11' fill='#59636e' text-anchor='end' font-weight='normal' >1</text>
+<text x='16.0' y='194.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#59636e' text-anchor='middle' font-weight='normal' transform='rotate(-90 16 194.0)'>MRR</text>
+<rect x='86.3' y='84.0' width='32.1' height='220.0' fill='#0072B2'/>
+<text x='102.4' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<rect x='120.5' y='84.0' width='32.1' height='220.0' fill='#E69F00'/>
+<text x='136.5' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<rect x='154.6' y='84.0' width='32.1' height='220.0' fill='#009E73'/>
+<text x='170.7' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<rect x='188.7' y='84.0' width='32.1' height='220.0' fill='#CC79A7'/>
+<text x='204.8' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<rect x='222.9' y='84.0' width='32.1' height='220.0' fill='#56B4E9'/>
+<text x='238.9' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<text x='170.7' y='324.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='middle' font-weight='normal' >lexical</text>
+<rect x='299.7' y='110.0' width='32.1' height='194.0' fill='#0072B2'/>
+<text x='315.7' y='106.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >0.88</text>
+<rect x='333.8' y='88.6' width='32.1' height='215.4' fill='#E69F00'/>
+<text x='349.9' y='84.6' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >0.98</text>
+<rect x='367.9' y='93.2' width='32.1' height='210.8' fill='#009E73'/>
+<text x='384.0' y='89.2' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >0.96</text>
+<rect x='402.1' y='84.0' width='32.1' height='220.0' fill='#CC79A7'/>
+<text x='418.1' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<rect x='436.2' y='84.0' width='32.1' height='220.0' fill='#56B4E9'/>
+<text x='452.3' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<text x='384.0' y='324.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='middle' font-weight='normal' >paraphrase</text>
+<rect x='513.0' y='267.3' width='32.1' height='36.7' fill='#0072B2'/>
+<text x='529.1' y='263.3' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >0.17</text>
+<rect x='547.1' y='120.7' width='32.1' height='183.3' fill='#E69F00'/>
+<text x='563.2' y='116.7' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >0.83</text>
+<rect x='581.3' y='120.7' width='32.1' height='183.3' fill='#009E73'/>
+<text x='597.3' y='116.7' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >0.83</text>
+<rect x='615.4' y='84.0' width='32.1' height='220.0' fill='#CC79A7'/>
+<text x='631.5' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<rect x='649.5' y='84.0' width='32.1' height='220.0' fill='#56B4E9'/>
+<text x='665.6' y='80.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='10' fill='#1f2328' text-anchor='middle' font-weight='normal' >1.00</text>
+<text x='597.3' y='324.0' font-family='-apple-system, Segoe UI, Helvetica, Arial, sans-serif' font-size='12' fill='#1f2328' text-anchor='middle' font-weight='normal' >malay</text>
+</svg>

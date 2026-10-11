@@ -53,8 +53,9 @@ def test_percentiles():
 
 
 # --------------------------------------------------------------- dataset sanity
-def test_dataset_labels_point_at_real_sections():
-    files, queries, digest = load_dataset(DEFAULT_DATASET)
+@pytest.mark.parametrize("name", ["teratai", "teratai-heldout"])
+def test_dataset_labels_point_at_real_sections(name):
+    files, queries, digest = load_dataset(DEFAULT_DATASET.parent / name)
     sections = {f.name: set(re.findall(r"^# (.+)$", f.read_text(), re.MULTILINE)) for f in files}
     assert len(files) >= 10 and len(digest) == 12
     ids = [q["id"] for q in queries]

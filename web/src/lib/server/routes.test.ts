@@ -195,6 +195,23 @@ describe("/api/eka proxy", () => {
     expect(resp.headers.get("set-cookie")).toMatch(/Max-Age=0/i);
   });
 
+  it("passes a rate limit through with its Retry-After, keeping the session", async () => {
+    fakeBackend(() =>
+      Response.json(
+        { error: { code: "rate_limited", message: "Too many ask requests" } },
+        { status: 429, headers: { "retry-after": "12" } },
+      ),
+    );
+    const resp = await proxyRoute.POST(
+      req("/api/eka/ask", { method: "POST", body: "{}", cookie: cookie() }),
+      ctx(["ask"]),
+    );
+    expect(resp.status).toBe(429);
+    expect(resp.headers.get("retry-after")).toBe("12");
+    expect(resp.headers.get("set-cookie")).toBeNull();
+    expect((await resp.json()).error.code).toBe("rate_limited");
+  });
+
   it("streams POST bodies through and keeps the API's status", async () => {
     fakeBackend(() => new Response(null, { status: 204 }));
     const resp = await proxyRoute.DELETE(

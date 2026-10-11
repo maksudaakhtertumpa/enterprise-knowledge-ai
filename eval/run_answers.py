@@ -2,6 +2,8 @@
 
     python -m eval.run_answers                     # real models from .env (Ollama on your Mac)
     python -m eval.run_answers --limit 5           # quick look
+    python -m eval.run_answers --dataset eval/datasets/teratai-heldout --no-injection
+                                                   # held-out questions (report once, don't tune)
     python -m eval.run_answers --backend hashing --reranker-backend hashing \
         --llm-backend extractive                   # offline plumbing check (NOT a quality result)
 
@@ -18,6 +20,11 @@ retrieval-only), and scores:
 The run uses the score gate *off*, so it measures the model alone; the gate table then
 shows, from the same data, what each threshold would add. Choose
 EKA_ANSWER_MIN_RERANK_SCORE from that table.
+
+The entailment check runs in *flag* mode: every answer sentence is scored by the NLI
+model but nothing is removed, so one run shows what every entailment threshold would
+do (answer rate, fact recall, refusals). Choose EKA_ANSWER_ENTAILMENT_THRESHOLD from
+that table on the development set, then confirm it once on the held-out set.
 
 Then a second workspace adds the four planted documents in datasets/injection and
 checks whether their payloads leak into answers.
@@ -39,16 +46,18 @@ from app.db.models import AnswerStatus
 from app.db.session import init_db
 from app.services.container import build_services
 from app.services.generation.answer import AnswerOutcome, AnswerService
+from app.services.generation.entailment import strip_markers
 from app.services.generation.verify import normalize_words
 from app.services.retrieval.embeddings import check_compatibility
 from app.services.retrieval.search import SearchService
 from eval import metrics
-from eval.run_retrieval import DEFAULT_OUT, ROOT, environment, ingest_corpus
+from eval.run_retrieval import DEFAULT_OUT, ROOT, corpus_dir, environment, ingest_corpus
 
 DATASET = ROOT / "eval" / "datasets" / "teratai"
 INJECTION = ROOT / "eval" / "datasets" / "injection"
 QUESTION_CATEGORIES = ("paraphrase", "malay", "unanswerable")
 GATE_THRESHOLDS = (0.0, 0.005, 0.01, 0.02, 0.03, 0.05, 0.075, 0.1, 0.15, 0.2, 0.3, 0.5)
+ENTAILMENT_THRESHOLDS = (0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
 
 
 # ------------------------------------------------------------------- scoring
@@ -76,6 +85,7 @@ def score_row(q: dict[str, Any], facts: list[list[str]], outcome: AnswerOutcome)
             citations.append((hit.document.filename, hit.chunk.heading or ""))
     top = outcome.passages[0].hit.rerank_score if outcome.passages else None
     answered = outcome.status is AnswerStatus.ANSWERED
+    checks = outcome.entailment
     return {
         "id": q["id"],
         "category": q["category"],
@@ -104,6 +114,14 @@ def score_row(q: dict[str, Any], facts: list[list[str]], outcome: AnswerOutcome)
         "evidence_sections": [
             f"{e.hit.document.filename} > {e.hit.chunk.heading or ''}" for e in outcome.passages
         ],
+        "facts": facts,
+        # Per-sentence P(entailment) from the NLI model (flag mode: nothing removed yet).
+        "entailment": (
+            [{"text": strip_markers(c.text), "score": c.score} for c in checks.sentences]
+            if checks and answered
+            else None
+        ),
+        "entailment_ms": outcome.timings_ms.get("entailment_ms"),
     }
 
 
@@ -171,6 +189,42 @@ def gate_table(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return table
 
 
+def apply_entailment(row: dict[str, Any], threshold: float) -> tuple[bool, str | None]:
+    """(answered, answer text) if sentences scoring below `threshold` were removed."""
+    if not row["answered"]:
+        return False, None
+    checks = row.get("entailment")
+    if not checks:  # no entailment data for this answer: nothing to remove
+        return True, row["answer"]
+    kept = [c["text"] for c in checks if c["score"] >= threshold]
+    return (True, " ".join(kept)) if kept else (False, None)
+
+
+def entailment_table(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """What removing sentences below each NLI threshold would do, from one flag-mode run."""
+    if not any(r.get("entailment") for r in rows):
+        return []
+    answerable = [r for r in rows if r["category"] != "unanswerable"]
+    unanswerable = [r for r in rows if r["category"] == "unanswerable"]
+    sentences = [c for r in rows for c in (r.get("entailment") or [])]
+    table = []
+    for t in ENTAILMENT_THRESHOLDS:
+        outcomes = {id(r): apply_entailment(r, t) for r in rows}
+        recall = [fact_recall(outcomes[id(r)][1], r.get("facts") or []) for r in answerable]
+        table.append(
+            {
+                "threshold": t,
+                "answer_rate": _ratio(sum(outcomes[id(r)][0] for r in answerable), len(answerable)),
+                "fact_recall": metrics.mean(recall) if recall else None,
+                "correct_refusal_rate": _ratio(
+                    sum(not outcomes[id(r)][0] for r in unanswerable), len(unanswerable)
+                ),
+                "sentences_removed": _ratio(sum(c["score"] < t for c in sentences), len(sentences)),
+            }
+        )
+    return table
+
+
 def _ratio(num: float, den: float) -> float | None:
     return round(num / den, 4) if den else None
 
@@ -189,7 +243,12 @@ def run_questions(services, workspace_id, questions, answers) -> list[dict[str, 
                 rerank_candidates=services.settings.rerank_candidates,
             )
             service = AnswerService(
-                db, services.settings, search, services.llm, services.embedder.count_tokens
+                db,
+                services.settings,
+                search,
+                services.llm,
+                services.embedder.count_tokens,
+                entailment=services.entailment,
             )
             outcome = service.answer(workspace_id, q["query"])
         row = score_row(q, answers.get(q["id"], []), outcome)
@@ -219,7 +278,12 @@ def run_injection(services, files: list[Path]) -> list[dict[str, Any]]:
                 rerank_candidates=services.settings.rerank_candidates,
             )
             outcome = AnswerService(
-                db, services.settings, search, services.llm, services.embedder.count_tokens
+                db,
+                services.settings,
+                search,
+                services.llm,
+                services.embedder.count_tokens,
+                entailment=services.entailment,
             ).answer(ws, q["query"])
         attack_hits = [e for e in outcome.passages if e.hit.document.filename == q["attack"]]
         answer = outcome.answer or ""
@@ -241,12 +305,24 @@ def run_injection(services, files: list[Path]) -> list[dict[str, Any]]:
     return rows
 
 
-def dataset_hash() -> str:
+def load_questions(
+    dataset: Path, categories: list[str], limit: int | None = None
+) -> tuple[list[dict[str, Any]], dict[str, list[list[str]]], list[Path]]:
+    queries = [json.loads(line) for line in (dataset / "queries.jsonl").read_text().splitlines()]
+    questions = [q for q in queries if q["category"] in categories][:limit]
+    answers = {
+        a["id"]: a["facts"]
+        for a in map(json.loads, (dataset / "answers.jsonl").read_text().splitlines())
+    }
+    return questions, answers, sorted(corpus_dir(dataset).glob("*.txt"))
+
+
+def dataset_hash(dataset: Path = DATASET) -> str:
     digest = hashlib.sha256()
     paths = [
-        *sorted((DATASET / "corpus").glob("*.txt")),
-        DATASET / "queries.jsonl",
-        DATASET / "answers.jsonl",
+        *sorted(corpus_dir(dataset).glob("*.txt")),
+        dataset / "queries.jsonl",
+        dataset / "answers.jsonl",
         *sorted((INJECTION / "attacks").glob("*.txt")),
         INJECTION / "queries.jsonl",
     ]
@@ -266,23 +342,38 @@ def _fmt(v: Any, pct: bool = True) -> str:
 def render(result: dict[str, Any]) -> str:
     env, s = result["environment"], result["summary"]
     llm = env["llm"]
+    ent = result.get("entailment") or {}
     lines = [
         f"# Answer benchmark — {result['label']}",
         "",
-        f"- Run: {result['timestamp']} · dataset hash `{result['dataset_hash']}` · "
+        f"- Run: {result['timestamp']} · dataset `{result.get('dataset', 'teratai')}` "
+        f"(hash `{result['dataset_hash']}`) · "
         f"{s['overall']['questions']} questions ({s['overall']['answerable']} answerable, "
         f"{s['overall']['unanswerable']} unanswerable)",
         f"- LLM: `{llm.get('model')}` ({llm.get('backend')}), context {llm.get('num_ctx', '—')}, "
         f"temperature {llm.get('temperature', '—')}",
         f"- Retrieval: `{env['embedding'].get('model')}` + "
         f"`{(env.get('reranker') or {}).get('model')}`, {result['passages']} passages per question",
+        f"- Entailment check: `{ent.get('model') or 'off'}` ({ent.get('backend', 'none')}, "
+        f"premise: {ent.get('granularity', 'passage')}"
+        + (
+            f" windows of up to {ent['window_sentences']}"
+            if ent.get("granularity") == "sentences"
+            else ""
+        )
+        + "), flag mode (scored, nothing removed)",
         f"- Machine: {env['platform']} · Python {env['python']} · cost: $0 (local models)",
         "",
     ]
-    if llm.get("backend") != "ollama" or env["embedding"].get("backend") == "hashing":
+    if (
+        llm.get("backend") != "ollama"
+        or env["embedding"].get("backend") == "hashing"
+        or ent.get("backend") == "lexical"
+    ):
         lines += [
-            "> **Warning:** this run uses offline stand-ins (no real LLM and/or non-semantic",
-            "> retrieval). It checks the pipeline, **not** answer quality.",
+            "> **Warning:** this run uses offline stand-ins (no real LLM, non-semantic",
+            "> retrieval and/or the lexical entailment stand-in). It checks the pipeline,",
+            "> **not** answer quality.",
             "",
         ]
     lines += [
@@ -322,6 +413,40 @@ def render(result: dict[str, Any]) -> str:
             f"{_fmt(g['answer_rate'])} | {_fmt(g['correct_refusal_rate'])} | "
             f"{_fmt(g['llm_calls_saved'])} |"
         )
+    if result.get("entailment_table"):
+        lines += [
+            "",
+            "## Entailment threshold trade-off (from the same run)",
+            "",
+            "Removing answer sentences whose P(entailment | cited passages) is below a "
+            "threshold; an answer with no sentence left becomes a refusal:",
+            "",
+            "| Threshold | Answer rate | Fact recall | Correct refusals | Sentences removed |",
+            "|---|---|---|---|---|",
+        ]
+        for g in result["entailment_table"]:
+            lines.append(
+                f"| {g['threshold']} | {_fmt(g['answer_rate'])} | {_fmt(g['fact_recall'])} | "
+                f"{_fmt(g['correct_refusal_rate'])} | {_fmt(g['sentences_removed'])} |"
+            )
+        low = sorted(
+            (
+                (c["score"], r["id"], c["text"])
+                for r in result["rows"]
+                for c in (r.get("entailment") or [])
+                if c["score"] < 0.5
+            ),
+        )
+        if low:
+            lines += [
+                "",
+                "Sentences scoring below 0.5 (check by hand whether the model is right):",
+                "",
+                "| Id | Score | Sentence |",
+                "|---|---|---|",
+            ]
+            for score, qid, text in low[:30]:
+                lines.append(f"| {qid} | {score:.3f} | {text.replace('|', '/')[:200]} |")
     if result.get("injection"):
         lines += [
             "",
@@ -364,6 +489,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--reranker-backend", choices=["cross-encoder", "hashing", "none"])
     parser.add_argument("--llm-backend", choices=["ollama", "extractive"])
     parser.add_argument("--model", help="Ollama model (default: EKA_OLLAMA_MODEL)")
+    parser.add_argument("--entailment-backend", choices=["nli", "lexical", "none"])
+    parser.add_argument("--entailment-model", help="Default: EKA_ENTAILMENT_MODEL")
+    parser.add_argument(
+        "--entailment-granularity",
+        choices=["sentences", "passage"],
+        help="Default: EKA_ENTAILMENT_GRANULARITY",
+    )
+    parser.add_argument("--dataset", type=Path, default=DATASET)
     parser.add_argument(
         "--categories",
         nargs="+",
@@ -376,13 +509,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args(argv)
 
-    queries = [json.loads(line) for line in (DATASET / "queries.jsonl").read_text().splitlines()]
-    questions = [q for q in queries if q["category"] in args.categories][: args.limit]
-    answers = {
-        a["id"]: a["facts"]
-        for a in map(json.loads, (DATASET / "answers.jsonl").read_text().splitlines())
-    }
-    files = sorted((DATASET / "corpus").glob("*.txt"))
+    questions, answers, files = load_questions(args.dataset, args.categories, args.limit)
 
     data_dir = Path(tempfile.mkdtemp(prefix="eka-answers-"))
     overrides: dict[str, Any] = {
@@ -390,12 +517,23 @@ def main(argv: list[str] | None = None) -> int:
         "log_level": "WARNING",
         "answer_min_rerank_score": 0.0,  # measure the model alone; gate analysed afterwards
         "ask_history": False,
+        "answer_entailment_mode": "flag",  # score every sentence; thresholds analysed afterwards
     }
+    # An offline embedder run stays offline: offline reranker and entailment stand-ins
+    # unless told otherwise.
+    offline = args.backend == "hashing"
+    entailment_backend = args.entailment_backend or ("lexical" if offline else None)
+    if entailment_backend:
+        overrides["entailment_backend"] = entailment_backend
+    if entailment_backend == "none":
+        overrides["answer_entailment_mode"] = "off"
     for flag, key in [
         (args.backend, "embedding_backend"),
-        (args.reranker_backend, "reranker_backend"),
+        (args.reranker_backend or ("hashing" if offline else None), "reranker_backend"),
         (args.llm_backend, "llm_backend"),
         (args.model, "ollama_model"),
+        (args.entailment_model, "entailment_model"),
+        (args.entailment_granularity, "entailment_granularity"),
     ]:
         if flag:
             overrides[key] = flag
@@ -415,6 +553,9 @@ def main(argv: list[str] | None = None) -> int:
         check_compatibility(services.embedder, settings)
         if services.reranker:
             services.reranker.load()
+        if services.entailment:
+            services.entailment.load()
+            print(f"Entailment: {services.entailment.describe()}")
         with services.session_factory() as db:
             workspace, _ = create_workspace_with_key(db, "answers")
             db.commit()
@@ -429,6 +570,15 @@ def main(argv: list[str] | None = None) -> int:
             injection = run_injection(services, files)
         env = environment(services)
         env["llm"] = services.llm.describe()
+        entailment = (
+            {
+                **services.entailment.describe(),
+                "granularity": settings.entailment_granularity,
+                "window_sentences": settings.entailment_window_sentences,
+            }
+            if services.entailment
+            else None
+        )
     finally:
         if "services" in locals():
             services.close()
@@ -440,15 +590,20 @@ def main(argv: list[str] | None = None) -> int:
         if any(r["category"] == c for r in rows)
     }
     label = args.label or f"{env['llm'].get('model', 'llm')}".replace(":", "-").replace("/", "-")
+    if args.dataset.resolve() != DATASET.resolve() and not args.label:
+        label = f"{args.dataset.name}-{label}"
     stamp = datetime.now(UTC)
     result = {
         "label": label,
         "timestamp": stamp.isoformat(timespec="seconds"),
-        "dataset_hash": dataset_hash(),
+        "dataset": args.dataset.name,
+        "dataset_hash": dataset_hash(args.dataset),
         "passages": settings.answer_passages,
         "environment": env,
+        "entailment": entailment,
         "summary": {"overall": summarize(rows), "by_category": by_category},
         "gate": gate_table(rows),
+        "entailment_table": entailment_table(rows),
         "injection": injection,
         "rows": rows,
     }
